@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order Success - JIBS</title>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1abc9c, #2c3e50);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .success-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            max-width: 500px;
+        }
+        .success-icon {
+            font-size: 80px;
+            color: #1abc9c;
+        }
+        h1 {
+            color: #2c3e50;
+            margin: 20px 0 10px;
+        }
+        .order-id {
+            background: #ecf0f1;
+            padding: 10px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .btn {
+            background: #1abc9c;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+        .btn:hover {
+            background: #16a085;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-card">
+        <div class="success-icon">✅</div>
+        <h1>Order Successful!</h1>
+        <p>Your order has been placed successfully.</p>
+        <div class="order-id">Order ID: #{{ sale_id }}</div>
+        <div class="btn-group">
+            <a href="/main_menu" class="btn">Main Menu</a>
+            <a href="/order_history" class="btn">View Orders</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Order History - JIBS</title>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; }
+        .sidebar {
+            width: 250px;
+            background: #2c3e50;
+            color: white;
+            position: fixed;
+            height: 100%;
+            padding: 20px 0;
+        }
+        .sidebar h2 { text-align: center; margin-bottom: 30px; color: #1abc9c; }
+        .sidebar a {
+            display: block;
+            padding: 12px 20px;
+            color: white;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        .sidebar a:hover { background: #1abc9c; padding-left: 30px; }
+        .main-content {
+            margin-left: 250px;
+            padding: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            border-left: 5px solid #1abc9c;
+            padding-left: 15px;
+        }
+        .search-box, .filter-box {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .search-box input {
+            padding: 8px;
+            width: 200px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .search-box button, .filter-box a {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .filter-box a {
+            background: #95a5a6;
+            margin-right: 5px;
+        }
+        .filter-box a.active {
+            background: #1abc9c;
+        }
+        table {
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        th {
+            background: #2c3e50;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+        .view-link {
+            background: #1abc9c;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; height: auto; position: relative; }
+            .main-content { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>🥤 JIBS</h2>
+        <a href="/main_menu">🏠 Main Menu</a>
+        <a href="/menu">📋 Menu</a>
+        <a href="/cart">🛒 Cart</a>
+        <a href="/order_history">📜 Orders</a>
+        <a href="/logout">🚪 Logout</a>
+    </div>
+    
+    <div class="main-content">
+        <h1>Order History</h1>
+        
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Enter Order ID (e.g., 1)">
+            <button onclick="searchOrder()">🔍 Search</button>
+            <button onclick="clearSearch()">🗑️ Clear</button>
+        </div>
+        
+        <div class="filter-box">
+            <a href="?date_filter=all" {% if date_filter == 'all' %}class="active"{% endif %}>All</a>
+            <a href="?date_filter=today" {% if date_filter == 'today' %}class="active"{% endif %}>Today</a>
+        </div>
+        
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+        
+        {% if orders %}
+        <table>
+            <thead>
+                <tr><th>Order ID</th><th>Date & Time</th><th>Total</th><th>Payment</th><th>Status</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>#{{ order.SaleID }}</td>
+                    <td>{{ order.SaleDate }}</td>
+                    <td>{{ "%.2f"|format(order.TotalAmount / 100) }} kr</td>
+                    <td>{{ order.PaymentMethod }}</td>
+                    <td><span style="color:#1abc9c;">✔ Completed</span></td>
+                    <td><a href="/order_details/{{ order.SaleID }}" class="view-link">View</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div style="text-align:center; padding:50px; background:white; border-radius:10px;">
+            <p>📭 No orders found.</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <script>
+        function searchOrder() {
+            let saleId = document.getElementById('searchInput').value;
+            if (saleId) window.location.href = `/search_order?sale_id=${saleId}`;
+        }
+        function clearSearch() {
+            window.location.href = "/order_history";
+        }
+    </script>
+</body>
+</html>

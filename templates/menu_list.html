@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Menu List - Admin</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #2c3e50; color: white; }
+        .active { color: green; }
+        .inactive { color: red; }
+        a { margin-right: 10px; }
+        .filter { margin-bottom: 20px; }
+        .filter a { text-decoration: none; padding: 5px 10px; background: #ddd; border-radius: 5px; margin-right: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Menu Items</h1>
+    
+    <div class="filter">
+        <strong>Filter by Category:</strong>
+        <a href="/admin/menu">All</a>
+        <a href="/admin/menu?category=Fresh Fruit Juices">Fresh Fruit Juices</a>
+        <a href="/admin/menu?category=Sugarcane Juice">Sugarcane Juice</a>
+        <a href="/admin/menu?category=Smoothies & Shakes">Smoothies & Shakes</a>
+    </div>
+    
+    <a href="/admin/menu/add">Add New Item</a>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Sm (kr)</th>
+                <th>Reg (kr)</th>
+                <th>Lg (kr)</th>
+                <th>Category</th>
+                <th>Vegan</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item[0] }}</td>
+                <td>{{ item[1] }}</td>
+                <td>{{ "%.2f"|format(item[2] / 100) }}</td>
+                <td>{{ "%.2f"|format(item[3] / 100) }}</td>
+                <td>{{ "%.2f"|format(item[4] / 100) }}</td>
+                <td>{{ item[5] }}</td>
+                <td>{{ "Yes" if item[6] else "No" }}</td>
+                <td class="{{ 'active' if item[7] else 'inactive' }}">{{ "Active" if item[7] else "Inactive" }}</td>
+                <td>
+                    <a href="/admin/menu/edit/{{ item[0] }}">Edit</a>
+                    <a href="/admin/menu/delete/{{ item[0] }}">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

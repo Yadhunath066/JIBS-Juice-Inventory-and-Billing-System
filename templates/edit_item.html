@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Menu Item</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        form { width: 500px; }
+        label { display: block; margin-top: 10px; }
+        input, select { width: 100%; padding: 8px; margin-top: 5px; }
+        button { background: blue; color: white; padding: 10px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Edit Menu Item</h1>
+    <form method="POST">
+        <label>Name:</label>
+        <input type="text" name="name" value="{{ item[1] }}" required>
+        
+        <label>Price (Small) in øre:</label>
+        <input type="number" name="price_sm" value="{{ item[2] }}" required>
+        
+        <label>Price (Regular) in øre:</label>
+        <input type="number" name="price_reg" value="{{ item[3] }}" required>
+        
+        <label>Price (Large) in øre:</label>
+        <input type="number" name="price_lg" value="{{ item[4] }}" required>
+        
+        <label>Category:</label>
+        <select name="category">
+            <option {% if item[5] == 'Fresh Fruit Juices' %}selected{% endif %}>Fresh Fruit Juices</option>
+            <option {% if item[5] == 'Sugarcane Juice' %}selected{% endif %}>Sugarcane Juice</option>
+            <option {% if item[5] == 'Smoothies & Shakes' %}selected{% endif %}>Smoothies & Shakes</option>
+        </select>
+        
+        <label>
+            <input type="checkbox" name="is_vegan" {% if item[6] %}checked{% endif %}> Vegan
+        </label>
+        
+        <button type="submit">Update Item</button>
+    </form>
+    <a href="/admin">Back to Admin</a>
+</body>
+</html>

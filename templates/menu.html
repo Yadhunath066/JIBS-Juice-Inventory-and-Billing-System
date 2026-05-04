@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Menu - JIBS</title>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; }
+        .sidebar {
+            width: 250px;
+            background: #2c3e50;
+            color: white;
+            position: fixed;
+            height: 100%;
+            padding: 20px 0;
+        }
+        .sidebar h2 { text-align: center; margin-bottom: 30px; color: #1abc9c; }
+        .sidebar a {
+            display: block;
+            padding: 12px 20px;
+            color: white;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+        .sidebar a:hover { background: #1abc9c; padding-left: 30px; }
+        .main-content {
+            margin-left: 250px;
+            padding: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            border-left: 5px solid #1abc9c;
+            padding-left: 15px;
+        }
+        .category {
+            margin-bottom: 40px;
+        }
+        .category h2 {
+            background: #ecf0f1;
+            padding: 10px 15px;
+            border-radius: 10px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .menu-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .menu-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 18px;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .sizes {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .size-option {
+            flex: 1;
+            text-align: center;
+            padding: 8px 5px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid #e9ecef;
+        }
+        .size-option.selected {
+            background: #1abc9c;
+            color: white;
+            border-color: #1abc9c;
+        }
+        .size-name {
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .size-price {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        .size-option.selected .size-price {
+            color: white;
+        }
+        .add-section {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .add-section input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .add-section button {
+            flex: 2;
+            background: #1abc9c;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .add-section button:hover {
+            background: #16a085;
+        }
+        .hidden-input {
+            display: none;
+        }
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; height: auto; position: relative; }
+            .main-content { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>🥤 JIBS</h2>
+        <a href="/main_menu">🏠 Main Menu</a>
+        <a href="/menu">📋 Menu</a>
+        <a href="/cart">🛒 Cart</a>
+        <a href="/order_history">📜 Orders</a>
+        <a href="/logout">🚪 Logout</a>
+    </div>
+    
+    <div class="main-content">
+        <h1>Our Menu</h1>
+        
+        {% for category, items in menu.items() %}
+        <div class="category">
+            <h2>{{ category }}</h2>
+            <div class="menu-grid">
+                {% for item in items %}
+                <div class="menu-card">
+                    <h3>{{ item.name }}</h3>
+                    <form method="POST" action="/add_to_cart">
+                        <input type="hidden" name="item_name" value="{{ item.name }}">
+                        <input type="hidden" name="size" id="size_{{ loop.index }}_{{ category }}" value="">
+                        
+                        <div class="sizes">
+                            {% for size, price in item.prices.items() %}
+                            <div class="size-option" data-size="{{ size }}">
+                                <div class="size-name">{{ size }}</div>
+                                <div class="size-price">{{ "%.2f"|format(price / 100) }} kr</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="add-section">
+                            <input type="number" name="quantity" value="1" min="1">
+                            <button type="submit">Add to Cart</button>
+                        </div>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <script>
+        // Size selection
+        document.querySelectorAll('.sizes').forEach(container => {
+            const form = container.closest('form');
+            const sizeInput = form.querySelector('input[name="size"]');
+            
+            container.querySelectorAll('.size-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    container.querySelectorAll('.size-option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    this.classList.add('selected');
+                    sizeInput.value = this.dataset.size;
+                });
+            });
+        });
+        
+        // Validate before submit
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const sizeInput = this.querySelector('input[name="size"]');
+                if (!sizeInput.value) {
+                    e.preventDefault();
+                    alert('Please select a size (Sm, Reg, or Lg)');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

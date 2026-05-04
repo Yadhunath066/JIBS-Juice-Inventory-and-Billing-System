@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Main Menu - JIBS</title>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1abc9c, #2c3e50);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .dashboard {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            width: 500px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .greeting {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .menu-card {
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 15px;
+            text-decoration: none;
+            color: #2c3e50;
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .menu-card:hover {
+            background: #1abc9c;
+            color: white;
+            transform: translateY(-5px);
+        }
+        .menu-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+        .logout {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .logout:hover {
+            background: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <h1>SIP & GO Juice Bar</h1>
+        <div class="greeting">Welcome, {{ staff_name }}!</div>
+        <div class="menu-grid">
+            <a href="/menu" class="menu-card">
+                <div class="menu-icon">📋</div>
+                <span>Menu</span>
+            </a>
+            <a href="/cart" class="menu-card">
+                <div class="menu-icon">🛒</div>
+                <span>Cart</span>
+            </a>
+            <a href="/order_history" class="menu-card">
+                <div class="menu-icon">📜</div>
+                <span>Orders</span>
+            </a>
+        </div>
+        <form action="/logout" method="GET">
+            <button type="submit" class="logout">🚪 Logout</button>
+        </form>
+    </div>
+</body>
+</html>

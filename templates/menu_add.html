@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Menu Item</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        input, select { padding: 5px; margin: 5px; width: 200px; }
+        button { padding: 8px 15px; background: green; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Add New Menu Item</h1>
+    <form method="POST">
+        <label>Name:</label><br>
+        <input type="text" name="name" required><br>
+        
+        <label>Price Small (kr):</label><br>
+        <input type="number" step="0.01" name="price_sm" required><br>
+        
+        <label>Price Regular (kr):</label><br>
+        <input type="number" step="0.01" name="price_reg" required><br>
+        
+        <label>Price Large (kr):</label><br>
+        <input type="number" step="0.01" name="price_lg" required><br>
+        
+        <label>Category:</label><br>
+        <select name="category">
+            <option value="Fresh Fruit Juices">Fresh Fruit Juices</option>
+            <option value="Sugarcane Juice">Sugarcane Juice</option>
+            <option value="Smoothies & Shakes">Smoothies & Shakes</option>
+        </select><br>
+        
+        <label>
+            <input type="checkbox" name="is_vegan"> Vegan
+        </label><br><br>
+        
+        <button type="submit">Add Menu Item</button>
+    </form>
+    <br>
+    <a href="/admin/menu">Back to Menu List</a>
+</body>
+</html>

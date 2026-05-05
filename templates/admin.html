@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin - Menu Management</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #2c3e50; color: white; }
+        .btn-add { background: green; color: white; padding: 10px; text-decoration: none; display: inline-block; margin-bottom: 20px; }
+        .btn-edit { background: blue; color: white; padding: 5px 10px; text-decoration: none; }
+        .btn-delete { background: red; color: white; padding: 5px 10px; text-decoration: none; }
+        .active { color: green; }
+        .inactive { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Menu Management Admin</h1>
+    <a href="/admin/add" class="btn-add">+ Add New Item</a>
+    <a href="/display" target="_blank">View Menu Page</a>
+    
+    <table>
+        <thead>
+            <tr><th>ID</th><th>Name</th><th>Sm</th><th>Reg</th><th>Lg</th><th>Category</th><th>Vegan</th><th>Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item[0] }}</td>
+                <td>{{ item[1] }}</td>
+                <td>{{ item[2] }} kr</td>
+                <td>{{ item[3] }} kr</td>
+                <td>{{ item[4] }} kr</td>
+                <td>{{ item[5] }}</td>
+                <td>{{ 'Yes' if item[6] else 'No' }}</td>
+                <td class="{{ 'active' if item[7] else 'inactive' }}">{{ 'Active' if item[7] else 'Inactive' }}</td>
+                <td>
+                    <a href="/admin/edit/{{ item[0] }}" class="btn-edit">Edit</a>
+                    <a href="/admin/delete/{{ item[0] }}" class="btn-delete" onclick="return confirm('Delete this item?')">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

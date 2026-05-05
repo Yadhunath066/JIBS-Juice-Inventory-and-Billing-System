@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JIBS - Menu Management | Sip & Go Junction</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 25px;
+        }
+        
+        /* Header with logo */
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f2f5;
+        }
+        
+        .shop-name {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .system-name {
+            font-size: 16px;
+            color: #1abc9c;
+            margin-top: 5px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            border-left: 5px solid #1abc9c;
+            padding-left: 15px;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+        
+        .search-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .search-box input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            width: 250px;
+            font-size: 14px;
+        }
+        
+        .search-box button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .search-box a {
+            background: #95a5a6;
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+        }
+        
+        .filter {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .filter strong {
+            color: #2c3e50;
+        }
+        
+        .filter a {
+            text-decoration: none;
+            padding: 6px 15px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            color: #2c3e50;
+            font-size: 13px;
+            transition: 0.3s;
+        }
+        
+        .filter a:hover {
+            background: #1abc9c;
+            color: white;
+            border-color: #1abc9c;
+        }
+        
+        .add-btn {
+            display: inline-block;
+            background: #1abc9c;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        
+        .add-btn:hover {
+            background: #16a085;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        th {
+            background: #2c3e50;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .active {
+            color: green;
+            font-weight: bold;
+        }
+        
+        .inactive {
+            color: red;
+        }
+        
+        .edit-link {
+            color: #3498db;
+            text-decoration: none;
+            margin-right: 10px;
+        }
+        
+        .delete-link {
+            color: #e74c3c;
+            text-decoration: none;
+        }
+        
+        .edit-link:hover, .delete-link:hover {
+            text-decoration: underline;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #ecf0f1;
+            color: #95a5a6;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="shop-name">🥤 Sip & Go Junction</div>
+            <div class="system-name">Juice Inventory & Billing System (JIBS)</div>
+        </div>
+        
+        <h1>🍹 Menu Management</h1>
+        <div class="subtitle">Manage your juice bar menu - Add, Edit, Delete items</div>
+        
+        <div class="search-box">
+            <form method="GET" action="/admin/menu" style="display: flex; gap: 10px;">
+                <input type="text" name="search" placeholder="🔍 Search by name...">
+                <button type="submit">Search</button>
+                <a href="/admin/menu">Clear</a>
+            </form>
+        </div>
+        
+        <div class="filter">
+            <strong>📁 Filter by Category:</strong>
+            <a href="/admin/menu">All</a>
+            <a href="/admin/menu?category=Fresh%20Fruit%20Juices">🍊 Fresh Fruit Juices</a>
+            <a href="/admin/menu?category=Sugarcane%20Juice">🌿 Sugarcane Juice</a>
+            <a href="/admin/menu?category=Smoothies%20%26%20Shakes">🥤 Smoothies & Shakes</a>
+            <a href="/admin/menu?vegan=1">🌱 Vegan Only</a>
+        </div>
+        
+        <a href="/admin/menu/add" class="add-btn">➕ Add New Item</a>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Sm (kr)</th>
+                    <th>Reg (kr)</th>
+                    <th>Lg (kr)</th>
+                    <th>Category</th>
+                    <th>Vegan</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item[0] }}</td>
+                    <td><strong>{{ item[1] }}</strong></td>
+                    <td>{{ "%.2f"|format(item[2] / 100) }}</td>
+                    <td>{{ "%.2f"|format(item[3] / 100) }}</td>
+                    <td>{{ "%.2f"|format(item[4] / 100) }}</td>
+                    <td>{{ item[5] }}</td>
+                    <td>{{ "Yes" if item[6] else "No" }}</td>
+                    <td class="{{ 'active' if item[7] else 'inactive' }}">{{ "Active" if item[7] else "Inactive" }}</td>
+                    <td>
+                        <a href="/admin/menu/edit/{{ item[0] }}" class="edit-link">✏️ Edit</a>
+                        <a href="/admin/menu/delete/{{ item[0] }}" class="delete-link" onclick="return confirm('Delete this item?')">🗑️ Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <div class="footer">
+            Sip & Go Junction | JIBS - Juice Inventory & Billing System | © 2026
+        </div>
+    </div>
+</body>
+</html>

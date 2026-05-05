@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Menu Item</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        input, select { padding: 5px; margin: 5px; width: 200px; }
+        button { padding: 8px 15px; background: blue; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Edit Menu Item</h1>
+    <form method="POST">
+        <label>Name:</label><br>
+        <input type="text" name="name" value="{{ item[1] }}" required><br>
+        
+        <label>Price Small (kr):</label><br>
+        <input type="number" step="0.01" name="price_sm" value="{{ item[2] / 100 }}" required><br>
+        
+        <label>Price Regular (kr):</label><br>
+        <input type="number" step="0.01" name="price_reg" value="{{ item[3] / 100 }}" required><br>
+        
+        <label>Price Large (kr):</label><br>
+        <input type="number" step="0.01" name="price_lg" value="{{ item[4] / 100 }}" required><br>
+        
+        <label>Category:</label><br>
+        <select name="category">
+            <option value="Fresh Fruit Juices" {{ 'selected' if item[5] == 'Fresh Fruit Juices' else '' }}>Fresh Fruit Juices</option>
+            <option value="Sugarcane Juice" {{ 'selected' if item[5] == 'Sugarcane Juice' else '' }}>Sugarcane Juice</option>
+            <option value="Smoothies & Shakes" {{ 'selected' if item[5] == 'Smoothies & Shakes' else '' }}>Smoothies & Shakes</option>
+        </select><br>
+        
+        <label>
+            <input type="checkbox" name="is_vegan" {{ 'checked' if item[6] else '' }}> Vegan
+        </label><br>
+        
+        <label>
+            <input type="checkbox" name="is_active" {{ 'checked' if item[7] else '' }}> Active (show on menu)
+        </label><br><br>
+        
+        <button type="submit">Update Menu Item</button>
+    </form>
+    <br>
+    <a href="/admin/menu">Back to Menu List</a>
+</body>
+</html>

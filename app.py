@@ -1,128 +1,3 @@
-<<<<<<< HEAD
-from flask import Flask, jsonify, request, render_template, redirect
-import sqlite3
-
-app = Flask(__name__)
-
-def get_db():
-    return sqlite3.connect('menu.db')
-
-# ============ M11: API FOR SANJAYA ============
-@app.route('/api/menu_items', methods=['GET'])
-def get_menu_items():
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("SELECT Name, PriceSm, PriceReg, PriceLg, Category, IsVegan FROM tblMenuItem WHERE IsActive = 1")
-    rows = cursor.fetchall()
-    conn.close()
-    
-    menu = []
-    for row in rows:
-        menu.append({
-            "name": row[0],
-            "sizes": {
-                "Sm": row[1],
-                "Reg": row[2],
-                "Lg": row[3]
-            },
-            "category": row[4],
-            "vegan": bool(row[5])
-        })
-    
-    return jsonify(menu)
-
-@app.route('/')
-def home():
-    return "Menu API is running! Go to /admin/menu to manage items"
-
-@app.route('/display')
-def display_menu():
-    return render_template('menu_display.html')
-
-# ============ M4: LIST ALL MENU ITEMS (WITH FILTER) ============
-@app.route('/admin/menu')
-def list_menu():
-    conn = get_db()
-    cursor = conn.cursor()
-    
-    category = request.args.get('category')
-    
-    if category:
-        cursor.execute("SELECT ItemID, Name, PriceSm, PriceReg, PriceLg, Category, IsVegan, IsActive FROM tblMenuItem WHERE Category = ?", (category,))
-    else:
-        cursor.execute("SELECT ItemID, Name, PriceSm, PriceReg, PriceLg, Category, IsVegan, IsActive FROM tblMenuItem")
-    
-    items = cursor.fetchall()
-    conn.close()
-    return render_template('menu_list.html', items=items)
-
-# ============ M1: ADD MENU ITEM ============
-@app.route('/admin/menu/add', methods=['GET', 'POST'])
-def add_menu_item():
-    if request.method == 'POST':
-        name = request.form['name']
-        price_sm = int(float(request.form['price_sm']) * 100)
-        price_reg = int(float(request.form['price_reg']) * 100)
-        price_lg = int(float(request.form['price_lg']) * 100)
-        category = request.form['category']
-        is_vegan = 1 if 'is_vegan' in request.form else 0
-        
-        conn = get_db()
-        cursor = conn.cursor()
-        cursor.execute("""
-            INSERT INTO tblMenuItem (Name, PriceSm, PriceReg, PriceLg, Category, IsVegan, IsActive)
-            VALUES (?, ?, ?, ?, ?, ?, 1)
-        """, (name, price_sm, price_reg, price_lg, category, is_vegan))
-        conn.commit()
-        conn.close()
-        
-        return redirect('/admin/menu')
-    
-    return render_template('menu_add.html')
-
-# ============ M2: EDIT MENU ITEM ============
-@app.route('/admin/menu/edit/<int:item_id>', methods=['GET', 'POST'])
-def edit_menu_item(item_id):
-    conn = get_db()
-    cursor = conn.cursor()
-    
-    if request.method == 'POST':
-        name = request.form['name']
-        price_sm = int(float(request.form['price_sm']) * 100)
-        price_reg = int(float(request.form['price_reg']) * 100)
-        price_lg = int(float(request.form['price_lg']) * 100)
-        category = request.form['category']
-        is_vegan = 1 if 'is_vegan' in request.form else 0
-        is_active = 1 if 'is_active' in request.form else 0
-        
-        cursor.execute("""
-            UPDATE tblMenuItem 
-            SET Name = ?, PriceSm = ?, PriceReg = ?, PriceLg = ?, Category = ?, IsVegan = ?, IsActive = ?
-            WHERE ItemID = ?
-        """, (name, price_sm, price_reg, price_lg, category, is_vegan, is_active, item_id))
-        conn.commit()
-        conn.close()
-        return redirect('/admin/menu')
-    
-    cursor.execute("SELECT ItemID, Name, PriceSm, PriceReg, PriceLg, Category, IsVegan, IsActive FROM tblMenuItem WHERE ItemID = ?", (item_id,))
-    item = cursor.fetchone()
-    conn.close()
-    
-    return render_template('menu_edit.html', item=item)
-
-# ============ M3: SOFT DELETE MENU ITEM ============
-@app.route('/admin/menu/delete/<int:item_id>')
-def delete_menu_item(item_id):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute("UPDATE tblMenuItem SET IsActive = 0 WHERE ItemID = ?", (item_id,))
-    conn.commit()
-    conn.close()
-    return redirect('/admin/menu')
-
-if __name__ == '__main__':
-    app.run(debug=True, port=5002)
-=======
 """
 JIBS Sales Sub-system - Sanjaya
 Full menu with categories, sizes, and prices in DKK (øre).
@@ -141,6 +16,7 @@ def get_db():
     return sqlite3.connect('jibs.db')
 
 def init_db():
+    """Create tblSale table if it doesn't exist (run once at startup)"""
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('''
@@ -159,7 +35,7 @@ def init_db():
 init_db()
 
 def get_all_orders():
-    """Return all orders, newest first."""
+    """Return all orders for order history page"""
     conn = get_db()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -169,7 +45,7 @@ def get_all_orders():
     return orders
 
 def get_order_by_id(sale_id):
-    """Fetch a single order by its SaleID."""
+    """Find a single order by SaleID (used for search and details page)"""
     conn = get_db()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -179,7 +55,7 @@ def get_order_by_id(sale_id):
     return dict(row) if row else None
 
 def get_orders_by_datetime(from_datetime, to_datetime):
-    """Return orders whose SaleDate is between the given datetime strings (inclusive)."""
+    """Filter orders by date-time range (used for advanced filter)"""
     conn = get_db()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -193,7 +69,7 @@ def get_orders_by_datetime(from_datetime, to_datetime):
     return orders
 
 def save_order(total_amount, payment_method, staff_id, item_count):
-    """Insert a new order with current datetime."""
+    """Save order to database and return the new SaleID"""
     conn = get_db()
     cursor = conn.cursor()
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -206,7 +82,7 @@ def save_order(total_amount, payment_method, staff_id, item_count):
     conn.close()
     return sale_id
 
-# ============ FULL MENU FROM PDF (hardcoded – will be replaced by Monika's API later) ============
+# ============ MENU DATA (hardcoded – will be replaced by Monika's API later) ============
 menu_data = {
     "Fresh Fruit Juices": [
         {"name": "Watermelon Juice", "prices": {"Sm": 2900, "Reg": 3900, "Lg": 4900}},
@@ -233,7 +109,7 @@ menu_data = {
 }
 
 def find_item_price(name, size):
-    """Helper to get price for a given item name and size."""
+    """Get price for a given item name and size (Sm/Reg/Lg)"""
     for cat, items in menu_data.items():
         for item in items:
             if item["name"] == name and size in item["prices"]:
@@ -242,18 +118,20 @@ def find_item_price(name, size):
 
 # ============ CART FUNCTIONS ============
 def get_cart_total(cart):
+    """Calculate total amount from cart items"""
     total = 0
     for item in cart.values():
         total += item['price'] * item['quantity']
     return total
 
 def get_item_count(cart):
+    """Calculate total number of items in cart"""
     return sum(item['quantity'] for item in cart.values())
 
-# ============ ROUTES ============
-
+# ============ LOGIN ============
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """Cashier login page. Simple auth for now, will integrate Yadhunath's staff API later."""
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -270,25 +148,32 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
+# ============ MAIN MENU ============
 @app.route('/')
 @app.route('/main_menu')
 def main_menu():
+    """Dashboard with navigation cards"""
     if 'staff_id' not in session:
         return redirect(url_for('login'))
     return render_template('main_menu.html', staff_name=session.get('staff_name'))
 
+# ============ MENU DISPLAY ============
 @app.route('/menu')
 def menu():
+    """Display juice menu with categories and size options"""
     if 'staff_id' not in session:
         return redirect(url_for('login'))
     return render_template('menu.html', menu=menu_data)
 
+# ============ ADD TO CART ============
 @app.route('/add_to_cart', methods=['POST'])
 def add_to_cart():
+    """Add item with selected size and quantity to cart (Backlog 1)"""
     item_name = request.form.get('item_name')
     size = request.form.get('size')
     quantity = int(request.form.get('quantity', 1))
     
+    # Validation: size must be selected
     if not size:
         return render_template('menu.html', menu=menu_data, error="Please select a size")
     
@@ -314,8 +199,10 @@ def add_to_cart():
     session.modified = True
     return redirect(url_for('cart'))
 
+# ============ CART PAGE ============
 @app.route('/cart')
 def cart():
+    """Display cart items, quantities, and total"""
     if 'staff_id' not in session:
         return redirect(url_for('login'))
     if 'cart' not in session:
@@ -323,8 +210,10 @@ def cart():
     total = get_cart_total(session['cart'])
     return render_template('cart.html', cart=session['cart'], total=total)
 
+# ============ UPDATE QUANTITY (AJAX) ============
 @app.route('/update_quantity/<string:cart_key>', methods=['POST'])
 def update_quantity(cart_key):
+    """Update item quantity via AJAX without page reload (Backlog 2)"""
     data = request.get_json()
     quantity = int(data.get('quantity', 0))
     if quantity <= 0:
@@ -338,16 +227,20 @@ def update_quantity(cart_key):
     total = get_cart_total(session['cart'])
     return jsonify({'success': True, 'total': total})
 
+# ============ REMOVE ITEM (AJAX) ============
 @app.route('/remove_item/<string:cart_key>', methods=['POST'])
 def remove_item(cart_key):
+    """Remove item from cart via AJAX (Backlog 3)"""
     if cart_key in session['cart']:
         del session['cart'][cart_key]
     session.modified = True
     total = get_cart_total(session['cart'])
     return jsonify({'success': True, 'total': total})
 
+# ============ PLACE ORDER ============
 @app.route('/place_order', methods=['POST'])
 def place_order():
+    """Save order to database, clear cart, show success (Backlog 6)"""
     if 'cart' not in session or not session['cart']:
         return redirect(url_for('cart'))
     payment_method = request.form.get('payment_method')
@@ -359,14 +252,15 @@ def place_order():
     session.modified = True
     return render_template('order_success.html', sale_id=sale_id)
 
+# ============ ORDER HISTORY WITH DATE-TIME FILTER ============
 @app.route('/order_history')
 def order_history():
-    # Get filter parameters from URL (date-time range)
+    """Show all orders or filter by date-time range (Backlog 7)"""
     from_date = request.args.get('from')
     to_date = request.args.get('to')
     
     if from_date and to_date:
-        # Convert HTML5 datetime-local format (YYYY-MM-DDTHH:MM) to SQLite format (YYYY-MM-DD HH:MM:SS)
+        # Convert HTML5 datetime-local to SQLite format
         from_datetime = from_date.replace('T', ' ') + ':00'
         to_datetime = to_date.replace('T', ' ') + ':59'
         orders = get_orders_by_datetime(from_datetime, to_datetime)
@@ -375,8 +269,10 @@ def order_history():
     
     return render_template('order_history.html', orders=orders, error=None)
 
+# ============ SEARCH BY SALEID ============
 @app.route('/search_order')
 def search_order():
+    """Find and display a specific order by SaleID (Backlog 9)"""
     sale_id = request.args.get('sale_id')
     if sale_id and sale_id.isdigit():
         order = get_order_by_id(int(sale_id))
@@ -387,15 +283,19 @@ def search_order():
             return render_template('order_history.html', orders=orders, error=f"Order {sale_id} not found")
     return redirect(url_for('order_history'))
 
+# ============ ORDER DETAILS ============
 @app.route('/order_details/<int:sale_id>')
 def order_details(sale_id):
+    """Show details for a single order"""
     order = get_order_by_id(sale_id)
     if order:
         return render_template('order_details.html', order=order)
     return redirect(url_for('order_history'))
 
+# ============ ORDER TYPE (Front-end only, not saved to database) ============
 @app.route('/set_order_type', methods=['POST'])
 def set_order_type():
+    """Store order type in session for receipt display (Backlog 5)"""
     data = request.get_json()
     session['order_type'] = data.get('order_type', 'takeaway')
     session.modified = True
@@ -403,4 +303,3 @@ def set_order_type():
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
->>>>>>> 56c3ae5e8d42646d00dae812b056c64e04b3ab22

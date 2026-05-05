@@ -31,6 +31,23 @@
             margin-bottom: 25px;
             padding-bottom: 20px;
             border-bottom: 2px solid #f0f2f5;
+            position: relative;
+        }
+        
+        .logout-btn {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #e74c3c;
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .logout-btn:hover {
+            background: #c0392b;
         }
         
         .shop-name {
@@ -43,6 +60,12 @@
             font-size: 16px;
             color: #1abc9c;
             margin-top: 5px;
+        }
+        
+        .welcome {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-top: 10px;
         }
         
         h1 {
@@ -197,13 +220,21 @@
             color: #95a5a6;
             font-size: 12px;
         }
+        
+        .empty-message {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
+            <a href="/admin/logout" class="logout-btn" onclick="return confirm('Logout from admin panel?')">🚪 Logout</a>
             <div class="shop-name">🥤 Sip & Go Junction</div>
             <div class="system-name">Juice Inventory & Billing System (JIBS)</div>
+            <div class="welcome">Welcome, Admin | Menu Management Panel</div>
         </div>
         
         <h1>🍹 Menu Management</h1>
@@ -211,7 +242,7 @@
         
         <div class="search-box">
             <form method="GET" action="/admin/menu" style="display: flex; gap: 10px;">
-                <input type="text" name="search" placeholder="🔍 Search by name...">
+                <input type="text" name="search" placeholder="🔍 Search by name..." value="{{ request.args.get('search', '') }}">
                 <button type="submit">Search</button>
                 <a href="/admin/menu">Clear</a>
             </form>
@@ -228,6 +259,7 @@
         
         <a href="/admin/menu/add" class="add-btn">➕ Add New Item</a>
         
+        {% if items %}
         <table>
             <thead>
                 <tr>
@@ -261,6 +293,12 @@
                 {% endfor %}
             </tbody>
         </table>
+        {% else %}
+        <div class="empty-message">
+            <p>🍹 No menu items found.</p>
+            <p>Click "Add New Item" to create your first menu item.</p>
+        </div>
+        {% endif %}
         
         <div class="footer">
             Sip & Go Junction | JIBS - Juice Inventory & Billing System | © 2026

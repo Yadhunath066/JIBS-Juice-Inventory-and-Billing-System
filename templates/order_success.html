@@ -38,6 +38,11 @@
             font-weight: bold;
             color: #2c3e50;
         }
+        .order-type {
+            margin: 10px 0;
+            font-size: 18px;
+            color: #2c3e50;
+        }
         .btn-group {
             display: flex;
             gap: 15px;
@@ -63,6 +68,7 @@
         <h1>Order Successful!</h1>
         <p>Your order has been placed successfully.</p>
         <div class="order-id">Order ID: #{{ sale_id }}</div>
+        <div class="order-type"><strong>Order Type:</strong> {{ session.get('order_type', 'takeaway') }}</div>
         <div class="btn-group">
             <a href="/main_menu" class="btn">Main Menu</a>
             <a href="/order_history" class="btn">View Orders</a>

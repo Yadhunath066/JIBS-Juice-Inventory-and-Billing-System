@@ -1,6 +1,7 @@
 """
 JIBS Sales Sub-system - Sanjaya
 Full menu with categories, sizes, and prices in DKK (øre).
+Includes date-time range filter for order history.
 """
 
 from flask import Flask, render_template, request, session, redirect, url_for, jsonify
@@ -33,6 +34,7 @@ def init_db():
 init_db()
 
 def get_all_orders():
+    """Return all orders, newest first."""
     conn = get_db()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -42,6 +44,7 @@ def get_all_orders():
     return orders
 
 def get_order_by_id(sale_id):
+    """Fetch a single order by its SaleID."""
     conn = get_db()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -50,32 +53,35 @@ def get_order_by_id(sale_id):
     conn.close()
     return dict(row) if row else None
 
-def get_orders_by_date(date_from, date_to):
+def get_orders_by_datetime(from_datetime, to_datetime):
+    """Return orders whose SaleDate is between the given datetime strings (inclusive)."""
     conn = get_db()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     cursor.execute("""
         SELECT * FROM tblSale 
-        WHERE DATE(SaleDate) BETWEEN ? AND ?
+        WHERE SaleDate BETWEEN ? AND ?
         ORDER BY SaleDate DESC
-    """, (date_from, date_to))
+    """, (from_datetime, to_datetime))
     orders = [dict(row) for row in cursor.fetchall()]
     conn.close()
     return orders
 
 def save_order(total_amount, payment_method, staff_id, item_count):
+    """Insert a new order with current datetime."""
     conn = get_db()
     cursor = conn.cursor()
+    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     cursor.execute('''
-        INSERT INTO tblSale (TotalAmount, PaymentMethod, StaffID, ItemCount)
-        VALUES (?, ?, ?, ?)
-    ''', (total_amount, payment_method, staff_id, item_count))
+        INSERT INTO tblSale (SaleDate, TotalAmount, PaymentMethod, StaffID, ItemCount)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (now, total_amount, payment_method, staff_id, item_count))
     conn.commit()
     sale_id = cursor.lastrowid
     conn.close()
     return sale_id
 
-# ============ FULL MENU FROM PDF ============
+# ============ FULL MENU FROM PDF (hardcoded – will be replaced by Monika's API later) ============
 menu_data = {
     "Fresh Fruit Juices": [
         {"name": "Watermelon Juice", "prices": {"Sm": 2900, "Reg": 3900, "Lg": 4900}},
@@ -101,8 +107,8 @@ menu_data = {
     ]
 }
 
-# Helper: get item price by name and size
 def find_item_price(name, size):
+    """Helper to get price for a given item name and size."""
     for cat, items in menu_data.items():
         for item in items:
             if item["name"] == name and size in item["prices"]:
@@ -154,7 +160,6 @@ def menu():
 
 @app.route('/add_to_cart', methods=['POST'])
 def add_to_cart():
-    """Add item with selected size to cart"""
     item_name = request.form.get('item_name')
     size = request.form.get('size')
     quantity = int(request.form.get('quantity', 1))
@@ -231,15 +236,19 @@ def place_order():
 
 @app.route('/order_history')
 def order_history():
-    if 'staff_id' not in session:
-        return redirect(url_for('login'))
-    date_filter = request.args.get('date_filter', 'all')
-    if date_filter == 'today':
-        today = datetime.now().strftime('%Y-%m-%d')
-        orders = get_orders_by_date(today, today)
+    # Get filter parameters from URL (date-time range)
+    from_date = request.args.get('from')
+    to_date = request.args.get('to')
+    
+    if from_date and to_date:
+        # Convert HTML5 datetime-local format (YYYY-MM-DDTHH:MM) to SQLite format (YYYY-MM-DD HH:MM:SS)
+        from_datetime = from_date.replace('T', ' ') + ':00'
+        to_datetime = to_date.replace('T', ' ') + ':59'
+        orders = get_orders_by_datetime(from_datetime, to_datetime)
     else:
         orders = get_all_orders()
-    return render_template('order_history.html', orders=orders, date_filter=date_filter)
+    
+    return render_template('order_history.html', orders=orders, error=None)
 
 @app.route('/search_order')
 def search_order():

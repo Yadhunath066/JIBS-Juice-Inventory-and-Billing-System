@@ -1,10 +1,8 @@
-<!-- cart.html – simplified but functional -->
 <!DOCTYPE html>
 <html>
 <head>
     <title>Cart - JIBS</title>
     <style>
-        /* same styling as before, omitted for brevity */
         body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; }
         .sidebar { width: 250px; background: #2c3e50; position: fixed; height: 100%; padding: 20px 0; }
         .sidebar a { display: block; color: white; padding: 12px 20px; text-decoration: none; }
@@ -16,6 +14,9 @@
         .remove-btn { background: #e74c3c; color: white; border: none; padding: 5px 10px; cursor: pointer; }
         .total-card { background: white; padding: 20px; margin-top: 20px; text-align: right; }
         .place-order-btn { background: #1abc9c; padding: 10px 20px; border: none; color: white; cursor: pointer; }
+        .order-type-selector { margin: 20px 0; background: white; padding: 15px; border-radius: 8px; }
+        .order-type-selector label { font-weight: bold; margin-right: 10px; }
+        .order-type-selector select { padding: 5px 10px; font-size: 16px; }
     </style>
 </head>
 <body>
@@ -30,8 +31,17 @@
     <div class="main-content">
         <h1>Shopping Cart</h1>
         {% if cart %}
+        <div class="order-type-selector">
+            <label>Order Type:</label>
+            <select id="orderType">
+                <option value="Drink In">Drink In</option>In</option>
+                <option value="Takeaway" selected>Takeaway</option>
+            </select>
+        </div>
         <table>
-            <thead><tr><th>Item</th><th>Size</th><th>Price</th><th>Quantity</th><th>Total</th><th></th></tr></thead>
+            <thead>
+                <tr><th>Item</th><th>Size</th><th>Price</th><th>Quantity</th><th>Total</th><th></th></tr>
+            </thead>
             <tbody>
             {% for key, item in cart.items() %}
             <tr>
@@ -60,6 +70,7 @@
         {% endif %}
     </div>
     <script>
+        // Update quantity
         document.querySelectorAll('.qty-input').forEach(input => {
             input.addEventListener('change', function() {
                 let key = this.dataset.key;
@@ -71,12 +82,24 @@
                 }).then(() => location.reload());
             });
         });
+        // Remove item
         document.querySelectorAll('.remove-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 let key = this.dataset.key;
                 fetch(`/remove_item/${key}`, {method: 'POST'}).then(() => location.reload());
             });
         });
+        // Order type change - send to server
+        const orderTypeSelect = document.getElementById('orderType');
+        if (orderTypeSelect) {
+            orderTypeSelect.addEventListener('change', function() {
+                fetch('/set_order_type', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({order_type: this.value})
+                });
+            });
+        }
     </script>
 </body>
 </html>

@@ -46,22 +46,31 @@
             border: 1px solid #ddd;
             border-radius: 5px;
         }
-        .search-box button, .filter-box a {
+        .search-box button, .filter-box button {
             background: #3498db;
             color: white;
             border: none;
             padding: 8px 15px;
             border-radius: 5px;
             cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
+        }
+        .filter-box label {
+            margin-right: 5px;
+            font-weight: bold;
+        }
+        .filter-box input {
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 15px;
         }
         .filter-box a {
             background: #95a5a6;
-            margin-right: 5px;
-        }
-        .filter-box a.active {
-            background: #1abc9c;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-left: 5px;
         }
         table {
             width: 100%;
@@ -113,15 +122,21 @@
     <div class="main-content">
         <h1>Order History</h1>
         
+        <!-- Search by Order ID -->
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="Enter Order ID (e.g., 1)">
             <button onclick="searchOrder()">🔍 Search</button>
             <button onclick="clearSearch()">🗑️ Clear</button>
         </div>
         
+        <!-- Date-Time Range Filter -->
         <div class="filter-box">
-            <a href="?date_filter=all" {% if date_filter == 'all' %}class="active"{% endif %}>All</a>
-            <a href="?date_filter=today" {% if date_filter == 'today' %}class="active"{% endif %}>Today</a>
+            <label>From:</label>
+            <input type="datetime-local" id="fromDateTime" value="2026-05-01T00:00">
+            <label>To:</label>
+            <input type="datetime-local" id="toDateTime" value="2026-05-03T23:59">
+            <button id="applyFilterBtn">Apply Filter</button>
+            <a href="/order_history">Reset</a>
         </div>
         
         {% if error %}
@@ -161,6 +176,16 @@
         function clearSearch() {
             window.location.href = "/order_history";
         }
+        
+        document.getElementById('applyFilterBtn').addEventListener('click', function() {
+            let from = document.getElementById('fromDateTime').value;
+            let to = document.getElementById('toDateTime').value;
+            if (from && to) {
+                window.location.href = `/order_history?from=${from}&to=${to}`;
+            } else {
+                alert('Please select both from and to date-time');
+            }
+        });
     </script>
 </body>
 </html>

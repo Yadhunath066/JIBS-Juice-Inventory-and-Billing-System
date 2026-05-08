@@ -1,12 +1,46 @@
-from flask import Flask, jsonify, request, render_template, redirect, url_for
+from flask import Flask, jsonify, request, render_template, redirect, url_for, session
 import sqlite3
+from functools import wraps
 
 app = Flask(__name__)
+app.secret_key = 'menu-secret-key-2026'
 
 def get_db():
     return sqlite3.connect('menu.db')
 
-# ============ M11: API FOR SANJAYA ============
+# ============ LOGIN DECORATOR ============
+def login_required(f):
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if not session.get('admin_logged_in'):
+            return redirect(url_for('admin_login'))
+        return f(*args, **kwargs)
+    return wrapper
+
+# ============ LOGIN ROUTES ============
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD = "admin123"
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        
+        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+            session['admin_logged_in'] = True
+            return redirect(url_for('list_menu'))
+        else:
+            return render_template('admin_login.html', error="Invalid username or password")
+    
+    return render_template('admin_login.html')
+
+@app.route('/admin/logout')
+def admin_logout():
+    session.clear()
+    return redirect(url_for('admin_login'))
+
+# ============ M11: API FOR SANJAYA (NO LOGIN REQUIRED) ============
 @app.route('/api/menu_items', methods=['GET'])
 def get_menu_items():
     conn = get_db()
@@ -32,10 +66,16 @@ def get_menu_items():
 
 @app.route('/')
 def home():
-    return "Menu API is running! Go to /admin/menu to manage items"
+    return "Menu API is running! Go to /admin/login to manage items"
+
+# ============ CUSTOMER MENU PAGE ============
+@app.route('/customer-menu')
+def customer_menu():
+    return render_template('customer_menu.html')
 
 # ============ M4: LIST ALL MENU ITEMS (WITH FILTER, SEARCH & VEGAN) ============
 @app.route('/admin/menu')
+@login_required
 def list_menu():
     conn = get_db()
     cursor = conn.cursor()
@@ -59,6 +99,7 @@ def list_menu():
 
 # ============ M1: ADD MENU ITEM ============
 @app.route('/admin/menu/add', methods=['GET', 'POST'])
+@login_required
 def add_menu_item():
     if request.method == 'POST':
         name = request.form['name']
@@ -83,6 +124,7 @@ def add_menu_item():
 
 # ============ M2: EDIT MENU ITEM ============
 @app.route('/admin/menu/edit/<int:item_id>', methods=['GET', 'POST'])
+@login_required
 def edit_menu_item(item_id):
     conn = get_db()
     cursor = conn.cursor()
@@ -113,6 +155,7 @@ def edit_menu_item(item_id):
 
 # ============ M3: SOFT DELETE MENU ITEM ============
 @app.route('/admin/menu/delete/<int:item_id>')
+@login_required
 def delete_menu_item(item_id):
     conn = get_db()
     cursor = conn.cursor()

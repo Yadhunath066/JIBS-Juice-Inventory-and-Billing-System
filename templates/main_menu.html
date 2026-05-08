@@ -3,94 +3,174 @@
 <head>
     <title>Main Menu - JIBS</title>
     <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #1abc9c, #2c3e50);
-            height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1abc9c, #2c3e50, #16a085);
+            background-size: 200% 200%;
+            animation: gradientMove 10s ease infinite;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 20px;
         }
+
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
         .dashboard {
             background: white;
-            border-radius: 20px;
+            border-radius: 30px;
             padding: 40px;
             width: 500px;
+            max-width: 100%;
             text-align: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+            animation: fadeInUp 0.6s ease-out;
         }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            width: 100px;
+            margin-bottom: 20px;
+        }
+
         h1 {
             color: #2c3e50;
-            margin-bottom: 10px;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 5px;
         }
+
         .greeting {
-            color: #7f8c8d;
+            background: #ecf0f1;
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #2c3e50;
             margin-bottom: 30px;
         }
+
+        .greeting i {
+            color: #1abc9c;
+            margin-right: 8px;
+        }
+
         .menu-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 15px;
             margin-bottom: 30px;
         }
+
         .menu-card {
-            background: #ecf0f1;
-            padding: 20px;
+            background: #f8f9fa;
+            padding: 20px 10px;
             border-radius: 15px;
             text-decoration: none;
             color: #2c3e50;
-            transition: 0.3s;
+            transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
             align-items: center;
+            border: 1px solid #e9ecef;
         }
+
         .menu-card:hover {
             background: #1abc9c;
             color: white;
             transform: translateY(-5px);
+            border-color: #1abc9c;
         }
+
         .menu-icon {
-            font-size: 40px;
+            font-size: 32px;
             margin-bottom: 10px;
         }
+
+        .menu-card span {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
         .logout {
             background: #e74c3c;
             color: white;
             border: none;
-            padding: 12px;
+            padding: 12px 20px;
             width: 100%;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
             transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
+
         .logout:hover {
             background: #c0392b;
+            transform: scale(1.02);
+        }
+
+        @media (max-width: 500px) {
+            .dashboard { padding: 25px; }
+            .menu-grid { gap: 10px; }
+            .menu-card { padding: 15px 5px; }
+            .menu-icon { font-size: 24px; }
+            h1 { font-size: 22px; }
         }
     </style>
 </head>
 <body>
     <div class="dashboard">
-        <h1>SIP & GO Juice Bar</h1>
-        <div class="greeting">Welcome, {{ staff_name }}!</div>
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Sip & Go Logo" class="logo">
+        <h1>Sip & Go Junction</h1>
+        <div class="greeting">
+            <i class="fas fa-user-check"></i> Welcome, {{ staff_name }}!
+        </div>
+
         <div class="menu-grid">
             <a href="/menu" class="menu-card">
-                <div class="menu-icon">📋</div>
+                <div class="menu-icon"><i class="fas fa-utensils"></i></div>
                 <span>Menu</span>
             </a>
             <a href="/cart" class="menu-card">
-                <div class="menu-icon">🛒</div>
+                <div class="menu-icon"><i class="fas fa-shopping-cart"></i></div>
                 <span>Cart</span>
             </a>
             <a href="/order_history" class="menu-card">
-                <div class="menu-icon">📜</div>
+                <div class="menu-icon"><i class="fas fa-clock"></i></div>
                 <span>Orders</span>
             </a>
         </div>
+
         <form action="/logout" method="GET">
-            <button type="submit" class="logout">🚪 Logout</button>
+            <button type="submit" class="logout">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
         </form>
     </div>
 </body>

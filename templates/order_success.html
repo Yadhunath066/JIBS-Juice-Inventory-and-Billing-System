@@ -3,76 +3,192 @@
 <head>
     <title>Order Success - JIBS</title>
     <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #1abc9c, #2c3e50);
-            height: 100vh;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 20px;
         }
         .success-card {
             background: white;
-            border-radius: 20px;
-            padding: 40px;
+            border-radius: 30px;
+            padding: 50px 40px;
             text-align: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
             max-width: 500px;
+            width: 100%;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         .success-icon {
             font-size: 80px;
             color: #1abc9c;
+            margin-bottom: 10px;
         }
         h1 {
             color: #2c3e50;
-            margin: 20px 0 10px;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .message {
+            color: #7f8c8d;
+            margin-bottom: 25px;
         }
         .order-id {
-            background: #ecf0f1;
-            padding: 10px;
-            border-radius: 10px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 15px;
             margin: 20px 0;
-            font-size: 24px;
-            font-weight: bold;
-            color: #2c3e50;
+        }
+        .order-id label {
+            font-size: 12px;
+            color: #95a5a6;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .order-id .id-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1abc9c;
+            font-family: monospace;
         }
         .order-type {
-            margin: 10px 0;
-            font-size: 18px;
+            background: #ecf0f1;
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 500;
             color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .order-type i {
+            color: #1abc9c;
+            margin-right: 8px;
         }
         .btn-group {
             display: flex;
             gap: 15px;
             justify-content: center;
-            margin-top: 20px;
+            margin-top: 25px;
+            flex-wrap: wrap;
         }
         .btn {
+            padding: 12px 25px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-primary {
             background: #1abc9c;
             color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 8px;
-            transition: 0.3s;
         }
-        .btn:hover {
+        .btn-primary:hover {
             background: #16a085;
+            transform: translateY(-2px);
+        }
+        .btn-secondary {
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+        .btn-secondary:hover {
+            background: #e0e4e8;
+            transform: translateY(-2px);
+        }
+        .btn-print {
+            background: #3498db;
+            color: white;
+        }
+        .btn-print:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            .btn-group {
+                display: none;
+            }
+            .success-card {
+                box-shadow: none;
+                padding: 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="success-card">
-        <div class="success-icon">✅</div>
+    <div class="success-card" id="receipt">
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
         <h1>Order Successful!</h1>
-        <p>Your order has been placed successfully.</p>
-        <div class="order-id">Order ID: #{{ sale_id }}</div>
-        <div class="order-type"><strong>Order Type:</strong> {{ session.get('order_type', 'takeaway') }}</div>
+        <p class="message">Your order has been placed successfully</p>
+        
+        <div class="order-id">
+            <label>Order ID</label>
+            <div class="id-number">#{{ sale_id }}</div>
+        </div>
+        
+        <div class="order-type">
+            <i class="fas fa-store"></i> {{ session.get('order_type', 'Takeaway') }}
+        </div>
+        
+        <!-- Receipt Footer -->
+        <div style="margin-top: 20px; font-size: 12px; color: #95a5a6; border-top: 1px dashed #ddd; padding-top: 15px;">
+            <p>Sip & Go Junction</p>
+            <p>Fresh Juice. Natural Taste.</p>
+            <p>Thank you for your order!</p>
+        </div>
+        
         <div class="btn-group">
-            <a href="/main_menu" class="btn">Main Menu</a>
-            <a href="/order_history" class="btn">View Orders</a>
+            <button onclick="window.print()" class="btn btn-print">
+                <i class="fas fa-print"></i> Print Receipt
+            </button>
+            <a href="/main_menu" class="btn btn-secondary">
+                <i class="fas fa-home"></i> Main Menu
+            </a>
+            <a href="/order_history" class="btn btn-primary">
+                <i class="fas fa-clock"></i> View Orders
+            </a>
         </div>
     </div>
+
+    <script>
+        // Auto-print dialog (optional - uncomment if you want print dialog to open automatically)
+        // window.onload = function() {
+        //     setTimeout(function() {
+        //         window.print();
+        //     }, 500);
+        // };
+    </script>
 </body>
 </html>

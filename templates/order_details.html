@@ -3,88 +3,217 @@
 <head>
     <title>Order Details - JIBS</title>
     <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f0f2f5;
+        }
+
+        /* Sidebar */
         .sidebar {
-            width: 250px;
-            background: #2c3e50;
+            width: 280px;
+            background: #1a252f;
             color: white;
             position: fixed;
             height: 100%;
-            padding: 20px 0;
+            padding: 25px 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
         }
-        .sidebar h2 { text-align: center; margin-bottom: 30px; color: #1abc9c; }
-        .sidebar a {
-            display: block;
-            padding: 12px 20px;
-            color: white;
-            text-decoration: none;
-            transition: 0.3s;
-        }
-        .sidebar a:hover { background: #1abc9c; padding-left: 30px; }
-        .main-content {
-            margin-left: 250px;
-            padding: 30px;
-        }
-        h1 {
-            color: #2c3e50;
+
+        .sidebar-logo {
+            text-align: center;
+            padding: 0 20px 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             margin-bottom: 20px;
-            border-left: 5px solid #1abc9c;
-            padding-left: 15px;
         }
-        .details-card {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            max-width: 500px;
+
+        .sidebar-logo img {
+            width: 100px;
+            border-radius: 12px;
+            margin-bottom: 10px;
         }
-        .details-card p {
-            margin: 12px 0;
+
+        .sidebar-logo h3 {
+            color: #1abc9c;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 25px;
+            color: #ecf0f1;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .sidebar a i {
+            width: 20px;
             font-size: 16px;
         }
-        .details-card strong {
-            color: #2c3e50;
-            width: 140px;
-            display: inline-block;
-        }
-        .back-btn {
-            display: inline-block;
-            margin-top: 20px;
-            background: #3498db;
+
+        .sidebar a:hover {
+            background: #1abc9c;
             color: white;
-            padding: 10px 20px;
-            text-decoration: none;
-            border-radius: 8px;
+            padding-left: 35px;
         }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 30px 40px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            border-left: 5px solid #1abc9c;
+            padding-left: 20px;
+        }
+
+        /* Details Card */
+        .details-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            max-width: 550px;
+        }
+
+        .detail-row {
+            display: flex;
+            padding: 15px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            width: 140px;
+            font-weight: 600;
+            color: #7f8c8d;
+        }
+
+        .detail-value {
+            flex: 1;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+
+        .detail-value.order-id {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1abc9c;
+        }
+
+        .status-badge {
+            background: #d4edda;
+            color: #155724;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 25px;
+            background: #ecf0f1;
+            color: #2c3e50;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #dfe4e8;
+        }
+
         @media (max-width: 768px) {
-            .sidebar { width: 100%; height: auto; position: relative; }
-            .main-content { margin-left: 0; }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+            .detail-row {
+                flex-direction: column;
+                gap: 5px;
+            }
+            .detail-label {
+                width: auto;
+            }
         }
     </style>
 </head>
 <body>
+
     <div class="sidebar">
-        <h2>🥤 JIBS</h2>
-        <a href="/main_menu">🏠 Main Menu</a>
-        <a href="/menu">📋 Menu</a>
-        <a href="/cart">🛒 Cart</a>
-        <a href="/order_history">📜 Orders</a>
-        <a href="/logout">🚪 Logout</a>
-    </div>
-    
-    <div class="main-content">
-        <h1>Order Details</h1>
-        <div class="details-card">
-            <p><strong>Order ID:</strong> #{{ order.SaleID }}</p>
-            <p><strong>Date & Time:</strong> {{ order.SaleDate }}</p>
-            <p><strong>Total Amount:</strong> {{ "%.2f"|format(order.TotalAmount / 100) }} kr</p>
-            <p><strong>Payment Method:</strong> {{ order.PaymentMethod }}</p>
-            <p><strong>Number of Items:</strong> {{ order.ItemCount }}</p>
-            <p><strong>Status:</strong> <span style="color:#1abc9c;">Completed</span></p>
+        <div class="sidebar-logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Sip & Go Logo">
+            <h3>Sip & Go Junction</h3>
         </div>
-        <a href="/order_history" class="back-btn">← Back to Orders</a>
+        <a href="/main_menu"><i class="fas fa-home"></i> Main Menu</a>
+        <a href="/menu"><i class="fas fa-utensils"></i> Menu</a>
+        <a href="/cart"><i class="fas fa-shopping-cart"></i> Cart</a>
+        <a href="/order_history"><i class="fas fa-history"></i> Orders</a>
+        <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
+
+    <div class="main-content">
+        <h1><i class="fas fa-receipt" style="color: #1abc9c; margin-right: 10px;"></i> Order Details</h1>
+
+        <div class="details-card">
+            <div class="detail-row">
+                <div class="detail-label">Order ID</div>
+                <div class="detail-value order-id">#{{ order.SaleID }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Date & Time</div>
+                <div class="detail-value">{{ order.SaleDate }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Total Amount</div>
+                <div class="detail-value"><span style="font-size: 20px; font-weight: 700; color: #1abc9c;">{{ "%.2f"|format(order.TotalAmount / 100) }} kr</span></div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Payment Method</div>
+                <div class="detail-value">{{ order.PaymentMethod }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Number of Items</div>
+                <div class="detail-value">{{ order.ItemCount }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">Status</div>
+                <div class="detail-value"><span class="status-badge"><i class="fas fa-check"></i> Completed</span></div>
+            </div>
+        </div>
+
+        <a href="/order_history" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back to Orders
+        </a>
+    </div>
+
 </body>
 </html>

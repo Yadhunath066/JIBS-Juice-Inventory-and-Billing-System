@@ -3,7 +3,10 @@
 <head>
     <title>Order History - JIBS</title>
     <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <!-- Poppins font for modern look -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -13,7 +16,7 @@
             background: #f0f2f5;
         }
 
-        /* Sidebar */
+        /* Fixed sidebar on the left */
         .sidebar {
             width: 280px;
             background: #1a252f;
@@ -24,6 +27,7 @@
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
         }
 
+        /* Logo section inside sidebar */
         .sidebar-logo {
             text-align: center;
             padding: 0 20px 20px 20px;
@@ -43,6 +47,7 @@
             font-weight: 600;
         }
 
+        /* Navigation links */
         .sidebar a {
             display: flex;
             align-items: center;
@@ -60,18 +65,20 @@
             font-size: 16px;
         }
 
+        /* Hover effect - turns green and moves right */
         .sidebar a:hover {
             background: #1abc9c;
             color: white;
             padding-left: 35px;
         }
 
-        /* Main Content */
+        /* Main content area - pushed right of sidebar */
         .main-content {
             margin-left: 280px;
             padding: 30px 40px;
         }
 
+        /* Page title with green left border */
         h1 {
             color: #2c3e50;
             font-size: 28px;
@@ -81,7 +88,7 @@
             padding-left: 20px;
         }
 
-        /* Search and Filter */
+        /* Search box and filter box containers */
         .search-box, .filter-box {
             background: white;
             padding: 20px;
@@ -90,6 +97,7 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
+        /* Search box layout */
         .search-box {
             display: flex;
             gap: 10px;
@@ -97,12 +105,21 @@
             align-items: center;
         }
 
-        .search-box input {
-            flex: 1;
+        .search-box select, .search-box input {
             padding: 12px 15px;
             border: 1px solid #ddd;
             border-radius: 10px;
             font-family: 'Poppins', sans-serif;
+        }
+
+        .search-box select {
+            background: white;
+            cursor: pointer;
+        }
+
+        .search-box input {
+            flex: 1;
+            min-width: 150px;
         }
 
         .search-box button, .filter-box button {
@@ -116,6 +133,7 @@
             font-weight: 500;
         }
 
+        /* Filter box layout */
         .filter-box {
             display: flex;
             gap: 15px;
@@ -142,7 +160,7 @@
             text-decoration: none;
         }
 
-        /* Table */
+        /* Orders table */
         .order-table {
             width: 100%;
             background: white;
@@ -169,6 +187,7 @@
             background: #f8f9fa;
         }
 
+        /* Green status badge */
         .status-badge {
             background: #d4edda;
             color: #155724;
@@ -179,6 +198,7 @@
             display: inline-block;
         }
 
+        /* View button */
         .view-link {
             background: #1abc9c;
             color: white;
@@ -201,6 +221,7 @@
             margin-bottom: 20px;
         }
 
+        /* Empty state when no orders */
         .empty-state {
             text-align: center;
             padding: 60px;
@@ -214,6 +235,7 @@
             margin-bottom: 15px;
         }
 
+        /* Mobile responsive */
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -245,6 +267,7 @@
             <img src="{{ url_for('static', filename='logo.png') }}" alt="Sip & Go Logo">
             <h3>Sip & Go Junction</h3>
         </div>
+        <!-- Sidebar navigation links -->
         <a href="/main_menu"><i class="fas fa-home"></i> Main Menu</a>
         <a href="/menu"><i class="fas fa-utensils"></i> Menu</a>
         <a href="/cart"><i class="fas fa-shopping-cart"></i> Cart</a>
@@ -255,10 +278,16 @@
     <div class="main-content">
         <h1><i class="fas fa-history" style="color: #1abc9c; margin-right: 10px;"></i> Order History</h1>
 
-        <!-- Search by Order ID -->
+        <!-- Improved search box with multiple search types -->
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Enter Order ID (e.g., 1)">
-            <button onclick="searchOrder()"><i class="fas fa-search"></i> Search</button>
+            <select id="searchType">
+                <option value="saleid">Order ID</option>
+                <option value="payment">Payment Method</option>
+                <option value="date">Date (YYYY-MM-DD)</option>
+                <option value="amount">Min Amount (kr)</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="Enter search value...">
+            <button onclick="advancedSearch()"><i class="fas fa-search"></i> Search</button>
             <button onclick="clearSearch()" style="background:#95a5a6;"><i class="fas fa-eraser"></i> Clear</button>
         </div>
 
@@ -272,10 +301,12 @@
             <a href="/order_history"><i class="fas fa-redo-alt"></i> Reset</a>
         </div>
 
+        <!-- Display error if any -->
         {% if error %}
         <div class="error">{{ error }}</div>
         {% endif %}
 
+        <!-- Orders table -->
         {% if orders %}
         <table class="order-table">
             <thead>
@@ -296,6 +327,7 @@
                     <td><span style="font-weight: 600; color: #1abc9c;">{{ "%.2f"|format(order.TotalAmount / 100) }} kr</span></td>
                     <td>{{ order.PaymentMethod }}</td>
                     <td><span class="status-badge">✓ Completed</span></td>
+                    <!-- View button links to order details -->
                     <td><a href="/order_details/{{ order.SaleID }}" class="view-link"><i class="fas fa-eye"></i> View</a></td>
                 </tr>
                 {% endfor %}
@@ -310,14 +342,41 @@
     </div>
 
     <script>
-        function searchOrder() {
-            let saleId = document.getElementById('searchInput').value;
-            if (saleId) window.location.href = `/search_order?sale_id=${saleId}`;
-        }
-        function clearSearch() {
-            window.location.href = "/order_history";
+        // Advanced search based on selected search type
+        function advancedSearch() {
+            let searchType = document.getElementById('searchType').value;
+            let searchValue = document.getElementById('searchInput').value.trim();
+            
+            if (!searchValue) {
+                alert('Please enter a search value');
+                return;
+            }
+            
+            // Redirect based on search type
+            if (searchType === 'saleid') {
+                window.location.href = `/search_order?sale_id=${searchValue}`;
+            } else if (searchType === 'payment') {
+                window.location.href = `/order_history?payment=${searchValue}`;
+            } else if (searchType === 'date') {
+                window.location.href = `/order_history?search_date=${searchValue}`;
+            } else if (searchType === 'amount') {
+                // Convert kr to øre (multiply by 100)
+                let amountInOre = parseFloat(searchValue) * 100;
+                if (isNaN(amountInOre)) {
+                    alert('Please enter a valid amount');
+                    return;
+                }
+                window.location.href = `/order_history?min_amount=${amountInOre}`;
+            }
         }
         
+        // Clear search - reload order history page without filters
+        function clearSearch() {
+            window.location.href = "/order_history";
+            document.getElementById('searchInput').value = '';
+        }
+        
+        // Apply date-time range filter
         document.getElementById('applyFilterBtn').addEventListener('click', function() {
             let from = document.getElementById('fromDateTime').value;
             let to = document.getElementById('toDateTime').value;

@@ -3,7 +3,10 @@
 <head>
     <title>Menu - JIBS</title>
     <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <!-- Poppins font for modern look -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -13,7 +16,7 @@
             background: #f0f2f5;
         }
 
-        /* Sidebar */
+        /* Fixed sidebar on the left */
         .sidebar {
             width: 280px;
             background: #1a252f;
@@ -24,6 +27,7 @@
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
         }
 
+        /* Logo section inside sidebar */
         .sidebar-logo {
             text-align: center;
             padding: 0 20px 20px 20px;
@@ -43,6 +47,7 @@
             font-weight: 600;
         }
 
+        /* Navigation links */
         .sidebar a {
             display: flex;
             align-items: center;
@@ -60,17 +65,14 @@
             font-size: 16px;
         }
 
+        /* Hover effect - turns green and moves right */
         .sidebar a:hover {
             background: #1abc9c;
             color: white;
             padding-left: 35px;
         }
 
-        /* Cart Badge */
-        .cart-badge {
-            position: relative;
-        }
-        
+        /* Red badge showing cart item count */
         .badge-count {
             position: absolute;
             top: -8px;
@@ -83,12 +85,13 @@
             border-radius: 50%;
         }
 
-        /* Main Content */
+        /* Main content area - pushed right of sidebar */
         .main-content {
             margin-left: 280px;
             padding: 30px 40px;
         }
 
+        /* Page title with green left border */
         h1 {
             color: #2c3e50;
             font-size: 28px;
@@ -98,7 +101,7 @@
             padding-left: 20px;
         }
 
-        /* Category Section */
+        /* Each category section (Fresh Fruit Juices, Sugarcane, Smoothies) */
         .category {
             margin-bottom: 50px;
         }
@@ -115,14 +118,14 @@
             border-left: 4px solid #1abc9c;
         }
 
-        /* Menu Grid */
+        /* Responsive grid for menu cards */
         .menu-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 25px;
         }
 
-        /* Menu Card */
+        /* Individual menu item card */
         .menu-card {
             background: white;
             border-radius: 20px;
@@ -131,11 +134,13 @@
             transition: all 0.3s ease;
         }
 
+        /* Card lifts up on hover */
         .menu-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
         }
 
+        /* Menu item name */
         .menu-card h3 {
             color: #2c3e50;
             font-size: 18px;
@@ -146,13 +151,14 @@
             border-bottom: 2px solid #ecf0f1;
         }
 
-        /* Size Buttons */
+        /* Size buttons row (Sm, Reg, Lg) */
         .sizes {
             display: flex;
             gap: 12px;
             margin-bottom: 20px;
         }
 
+        /* Each size button */
         .size-option {
             flex: 1;
             text-align: center;
@@ -168,6 +174,7 @@
             background: #e9ecef;
         }
 
+        /* Selected size turns green */
         .size-option.selected {
             background: #1abc9c;
             color: white;
@@ -188,7 +195,7 @@
             color: white;
         }
 
-        /* Add to Cart Section */
+        /* Add to cart section with quantity input and button */
         .add-section {
             display: flex;
             gap: 10px;
@@ -223,7 +230,7 @@
             transform: scale(1.02);
         }
 
-        /* Toast Notification */
+        /* Toast notification popup */
         .toast-notification {
             position: fixed;
             top: 20px;
@@ -242,6 +249,7 @@
             background: #e74c3c;
         }
 
+        /* Slide in animation for toast */
         @keyframes slideIn {
             from {
                 transform: translateX(100%);
@@ -253,7 +261,7 @@
             }
         }
 
-        /* Responsive */
+        /* Mobile responsive - sidebar becomes full width on top */
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -277,8 +285,10 @@
             <img src="{{ url_for('static', filename='logo.png') }}" alt="Sip & Go Logo">
             <h3>Sip & Go Junction</h3>
         </div>
+        <!-- Sidebar navigation links -->
         <a href="/main_menu"><i class="fas fa-home"></i> Main Menu</a>
         <a href="/menu"><i class="fas fa-utensils"></i> Menu</a>
+        <!-- Cart link with badge showing item count -->
         <a href="/cart" class="cart-link"><i class="fas fa-shopping-cart"></i> Cart <span id="cartCount" class="badge-count" style="display: none;">0</span></a>
         <a href="/order_history"><i class="fas fa-history"></i> Orders</a>
         <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
@@ -287,17 +297,21 @@
     <div class="main-content">
         <h1>Our Menu</h1>
 
+        <!-- Loop through each category -->
         {% for category, items in menu.items() %}
         <div class="category">
             <h2><i class="fas fa-leaf" style="color: #1abc9c; margin-right: 10px;"></i> {{ category }}</h2>
             <div class="menu-grid">
+                <!-- Loop through each item in category -->
                 {% for item in items %}
                 <div class="menu-card">
                     <h3>{{ item.name }}</h3>
+                    <!-- AJAX form - submits without page reload -->
                     <form class="add-to-cart-form" data-item-name="{{ item.name }}">
                         <input type="hidden" name="item_name" value="{{ item.name }}">
                         <input type="hidden" name="size" class="size-hidden-input" value="">
 
+                        <!-- Size options -->
                         <div class="sizes">
                             {% for size, price in item.prices.items() %}
                             <div class="size-option" data-size="{{ size }}">
@@ -320,7 +334,7 @@
     </div>
 
     <script>
-        // Show toast notification
+        // Show popup message when item added to cart
         function showToast(message, type = 'success') {
             const toast = document.createElement('div');
             toast.className = `toast-notification ${type}`;
@@ -329,7 +343,7 @@
             setTimeout(() => toast.remove(), 2500);
         }
 
-        // Update cart count badge
+        // Update the red badge with cart item count
         function updateCartCount() {
             fetch('/cart_count')
                 .then(response => response.json())
@@ -344,7 +358,7 @@
                 });
         }
 
-        // Size selection
+        // Size selection - click to select Sm, Reg, or Lg
         document.querySelectorAll('.sizes').forEach(container => {
             const form = container.closest('form');
             const sizeInput = form.querySelector('.size-hidden-input');
@@ -360,7 +374,7 @@
             });
         });
 
-        // AJAX Add to Cart
+        // AJAX Add to Cart - no page reload
         document.querySelectorAll('.add-to-cart-form').forEach(form => {
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -368,6 +382,7 @@
                 const sizeInput = this.querySelector('.size-hidden-input');
                 const selectedSize = sizeInput.value;
                 
+                // Validate size selection
                 if (!selectedSize) {
                     showToast('Please select a size (Sm, Reg, or Lg)', 'error');
                     return;
@@ -386,12 +401,8 @@
                     if (result.success) {
                         showToast(result.message, 'success');
                         updateCartCount();
-                        
-                        // Reset form for next item (optional)
+                        // Reset quantity to 1 after adding
                         this.querySelector('.qty-input').value = 1;
-                        // Reset size selection (optional - uncomment if you want)
-                        // this.querySelectorAll('.size-option').forEach(opt => opt.classList.remove('selected'));
-                        // sizeInput.value = '';
                     } else {
                         showToast(result.error, 'error');
                     }
@@ -401,7 +412,7 @@
             });
         });
 
-        // Update cart count on page load
+        // Get cart count when page loads
         updateCartCount();
     </script>
 

@@ -157,18 +157,24 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        if username == 'cashier' and password == '123':
+        if username == 'cashier' and password == 'sanjaya123':
             session['staff_id'] = 1
             session['staff_name'] = 'Cashier'
             return redirect(url_for('main_menu'))
         else:
-            return render_template('login.html', error='Invalid credentials')
+            return render_template('login.html', error='  ⚠️ The username or password you entered is incorrect. Please try again later.')
     return render_template('login.html')
 
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('login'))
+
+
+#=========forgot password ==========
+@app.route('/forgot_password')
+def forgot_password():
+    return render_template('forgot_password.html')
 
 # ============ MAIN MENU ============
 

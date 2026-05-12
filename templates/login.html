@@ -3,8 +3,13 @@
 <head>
     <title>Login - JIBS</title>
     <meta charset="UTF-8">
+    <!-- Favicon for browser tab -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <!-- Makes the page responsive on mobile devices -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <!-- Poppins font for modern look -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -15,14 +20,51 @@
             background: #1a252f;
         }
 
-        /* Split Screen Layout */
+        /* Password container - positions the eye icon inside the password field */
+        .password-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .password-container input {
+            width: 100%;
+            padding: 12px 40px 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: 'Poppins', sans-serif;
+            background: white;
+        }
+
+        /* Eye icon - positioned inside password field, white background hides password dots */
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            background: white;
+            font-size: 18px;
+            z-index: 10;
+            width: 25px;
+            height: 25px;
+            text-align: center;
+            line-height: 25px;
+            border-radius: 3px;
+        }
+
+        .toggle-password i {
+            color: #1abc9c !important;
+        }
+
+        /* Split screen layout - video on left, form on right */
         .split-screen {
             display: flex;
             min-height: 100vh;
             flex-wrap: wrap;
         }
 
-        /* Left Side - Video */
+        /* Left side - video background */
         .video-side {
             flex: 1;
             min-height: 40vh;
@@ -39,6 +81,7 @@
             left: 0;
         }
 
+        /* Dark overlay on video for better text readability */
         .video-overlay {
             position: absolute;
             top: 0;
@@ -48,6 +91,7 @@
             background: rgba(0, 0, 0, 0.4);
         }
 
+        /* Text message displayed on the video */
         .video-text {
             position: absolute;
             bottom: 30px;
@@ -70,7 +114,7 @@
             opacity: 0.85;
         }
 
-        /* Right Side - Login Form */
+        /* Right side - login form container */
         .login-side {
             flex: 1;
             background: white;
@@ -81,6 +125,7 @@
             min-height: 60vh;
         }
 
+        /* Login card - white box containing the form */
         .login-card {
             width: 100%;
             max-width: 380px;
@@ -96,11 +141,13 @@
         .login-card h1 {
 =======
 
+        /* Company logo */
         .logo {
             width: 90px;
             margin-bottom: 20px;
         }
 
+        /* Main title */
         .system-title {
             font-size: 20px;
             font-weight: 700;
@@ -109,6 +156,7 @@
             margin-bottom: 5px;
         }
 
+        /* Company name in green */
         .company-name {
             font-size: 16px;
             font-weight: 600;
@@ -123,6 +171,7 @@
             font-weight: 500;
         }
 
+        /* Input field group */
         .input-group {
             margin-bottom: 20px;
             text-align: left;
@@ -151,12 +200,14 @@
             font-family: 'Poppins', sans-serif;
         }
 
+        /* Green glow effect when input is focused */
         .input-group input:focus {
             outline: none;
             border-color: #1abc9c;
             box-shadow: 0 0 8px rgba(26, 188, 156, 0.3);
         }
 
+        /* Login button */
         .login-btn {
             width: 100%;
             background: #1abc9c;
@@ -171,15 +222,12 @@
             margin-top: 10px;
         }
 
-        .login-btn i {
-            margin-right: 8px;
-        }
-
         .login-btn:hover {
             background: #16a085;
             transform: scale(1.02);
         }
 
+        /* Error message when login fails */
         .error {
             background: #f8d7da;
             color: #721c24;
@@ -195,20 +243,17 @@
             color: #95a5a6;
         }
 
-        /* Tablet (768px to 1024px) */
+        /* Tablet responsive */
         @media (min-width: 768px) and (max-width: 1024px) {
             .video-text h2 {
                 font-size: 20px;
-            }
-            .video-text p {
-                font-size: 12px;
             }
             .login-card {
                 max-width: 320px;
             }
         }
 
-        /* Mobile (up to 767px) */
+        /* Mobile responsive - video on top, form below */
         @media (max-width: 767px) {
             .split-screen {
                 flex-direction: column;
@@ -216,45 +261,24 @@
             .video-side {
                 min-height: 280px;
             }
-            .video-text {
-                bottom: 15px;
-            }
             .video-text h2 {
                 font-size: 18px;
-            }
-            .video-text p {
-                font-size: 11px;
-            }
-            .login-side {
-                padding: 30px 20px;
             }
             .login-card {
                 max-width: 100%;
             }
-            .system-title {
-                font-size: 18px;
-            }
         }
 
-        /* Small mobile (up to 480px) */
+        /* Small mobile responsive */
         @media (max-width: 480px) {
             .video-side {
                 min-height: 240px;
-            }
-            .video-text h2 {
-                font-size: 16px;
-            }
-            .login-side {
-                padding: 25px 15px;
             }
             .logo {
                 width: 70px;
             }
             .system-title {
                 font-size: 16px;
-            }
-            .company-name {
-                font-size: 14px;
             }
         }
     </style>
@@ -277,7 +301,7 @@
 
     <div class="split-screen">
 
-        <!-- Left Side: Video -->
+        <!-- Left side - background video -->
         <div class="video-side">
             <video autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover;">
                 <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4">
@@ -289,27 +313,47 @@
             </div>
         </div>
 
-        <!-- Right Side: Login Form -->
+        <!-- Right side - login form -->
         <div class="login-side">
             <div class="login-card">
+                <!-- Company logo -->
                 <img src="{{ url_for('static', filename='logo.png') }}" alt="Sip & Go Logo" class="logo">
                 <div class="system-title">Juice Inventory & Billing System</div>
                 <div class="company-name">Sip & Go Junction</div>
                 <div class="tagline">Fresh & Natural</div>
 
+                <!-- Display error message if login fails -->
                 {% if error %}
                 <div class="error">{{ error }}</div>
                 {% endif %}
 
+                <!-- Login form -->
                 <form method="POST">
                     <div class="input-group">
                         <label><i class="fas fa-user"></i> Username</label>
                         <input type="text" name="username" placeholder="Enter username" required>
                     </div>
+
                     <div class="input-group">
                         <label><i class="fas fa-lock"></i> Password</label>
-                        <input type="password" name="password" placeholder="Enter password" required>
+                        <div class="password-container">
+                            <input type="password" name="password" id="password" placeholder="Enter password" required>
+                            <!-- Eye icon for show/hide password -->
+                            <span class="toggle-password" id="togglePassword">
+                                <i class="fas fa-eye"></i>
+                            </span>
+                        </div>
                     </div>
+
+                    
+                    <!-- Remember Me and Forgot Password side by side -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                         <label style="font-size: 13px; cursor: pointer;">
+                         <input type="checkbox" name="remember"> Remember Me
+                         </label>
+                         <a href="/forgot_password" style="font-size: 12px; color: #0b0c0c; text-decoration: none;">Forgot Password?</a>
+                    </div>
+
                     <button type="submit" class="login-btn"><i class="fas fa-sign-in-alt"></i> Login</button>
                 </form>
                 <div class="footer">© 2026 Sip & Go Junction | JIBS System</div>
@@ -318,6 +362,26 @@
 
 >>>>>>> 068d033e50fa334607c2c6e2b0ffe4899dec58d8
     </div>
+
+    <script>
+        // Show/hide password toggle functionality
+        const togglePassword = document.getElementById('togglePassword');
+        const password = document.getElementById('password');
+
+        if (togglePassword && password) {
+            togglePassword.addEventListener('click', function() {
+                // Toggle password field type between password and text
+                const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                password.setAttribute('type', type);
+                // Toggle eye icon between open and closed
+                const icon = this.querySelector('i');
+                if (icon) {
+                    icon.classList.toggle('fa-eye');
+                    icon.classList.toggle('fa-eye-slash');
+                }
+            });
+        }
+    </script>
 
 </body>
 </html>

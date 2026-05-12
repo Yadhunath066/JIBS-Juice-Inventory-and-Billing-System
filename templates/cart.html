@@ -3,7 +3,10 @@
 <head>
     <title>Cart - JIBS</title>
     <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <!-- Poppins font for modern look -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -13,7 +16,7 @@
             background: #f0f2f5;
         }
 
-        /* Sidebar */
+        /* Fixed sidebar on the left */
         .sidebar {
             width: 280px;
             background: #1a252f;
@@ -24,6 +27,7 @@
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
         }
 
+        /* Logo section inside sidebar */
         .sidebar-logo {
             text-align: center;
             padding: 0 20px 20px 20px;
@@ -43,6 +47,7 @@
             font-weight: 600;
         }
 
+        /* Navigation links */
         .sidebar a {
             display: flex;
             align-items: center;
@@ -60,18 +65,20 @@
             font-size: 16px;
         }
 
+        /* Hover effect - turns green and moves right */
         .sidebar a:hover {
             background: #1abc9c;
             color: white;
             padding-left: 35px;
         }
 
-        /* Main Content */
+        /* Main content area - pushed right of sidebar */
         .main-content {
             margin-left: 280px;
             padding: 30px 40px;
         }
 
+        /* Page title with green left border */
         h1 {
             color: #2c3e50;
             font-size: 28px;
@@ -81,7 +88,7 @@
             padding-left: 20px;
         }
 
-        /* Cart Container */
+        /* White card for cart contents */
         .cart-container {
             background: white;
             border-radius: 20px;
@@ -89,7 +96,7 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
         }
 
-        /* Order Type Selector */
+        /* Order type selector bar */
         .order-type-selector {
             background: #f8f9fa;
             padding: 15px 20px;
@@ -106,16 +113,29 @@
             color: #2c3e50;
         }
 
-        .order-type-selector select {
-            padding: 8px 15px;
+        /* Order Type Buttons */
+        .order-type-btn {
+            background: #f8f9fa;
             border: 1px solid #ddd;
+            padding: 8px 20px;
             border-radius: 8px;
+            cursor: pointer;
             font-family: 'Poppins', sans-serif;
-            font-size: 14px;
-            background: white;
+            font-weight: 500;
+            transition: all 0.2s ease;
         }
 
-        /* Cart Table */
+        .order-type-btn.active {
+            background: #1abc9c;
+            color: white;
+            border-color: #1abc9c;
+        }
+
+        .order-type-btn:hover {
+            background: #e9ecef;
+        }
+
+        /* Cart table */
         .cart-table {
             width: 100%;
             border-collapse: collapse;
@@ -137,11 +157,13 @@
             vertical-align: middle;
         }
 
+        /* Item name styling */
         .item-name {
             font-weight: 600;
             color: #2c3e50;
         }
 
+        /* Size badge */
         .item-size {
             display: inline-block;
             background: #ecf0f1;
@@ -151,6 +173,7 @@
             font-weight: 500;
         }
 
+        /* Quantity input field */
         .qty-input {
             width: 70px;
             padding: 8px;
@@ -160,6 +183,7 @@
             font-family: 'Poppins', sans-serif;
         }
 
+        /* Remove item button (red trash icon) */
         .remove-btn {
             background: none;
             border: none;
@@ -174,7 +198,7 @@
             transform: scale(1.1);
         }
 
-        /* Total Card */
+        /* Total amount card */
         .total-card {
             background: #f8f9fa;
             padding: 20px;
@@ -198,7 +222,7 @@
             color: #1abc9c;
         }
 
-        /* Payment Section */
+        /* Payment section with buttons */
         .payment-section {
             background: #f8f9fa;
             padding: 20px;
@@ -216,14 +240,29 @@
             color: #2c3e50;
         }
 
-        .payment-section select {
-            padding: 10px 15px;
+        /* Payment Method Buttons */
+        .payment-btn {
+            background: #f8f9fa;
             border: 1px solid #ddd;
+            padding: 8px 20px;
             border-radius: 8px;
+            cursor: pointer;
             font-family: 'Poppins', sans-serif;
-            background: white;
+            font-weight: 500;
+            transition: all 0.2s ease;
         }
 
+        .payment-btn.active {
+            background: #1abc9c;
+            color: white;
+            border-color: #1abc9c;
+        }
+
+        .payment-btn:hover {
+            background: #e9ecef;
+        }
+
+        /* Place order button (green) */
         .place-order-btn {
             background: #1abc9c;
             color: white;
@@ -241,7 +280,25 @@
             transform: scale(1.02);
         }
 
-        /* Empty Cart */
+        /* Clear cart button (red) */
+        .clear-cart-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .clear-cart-btn:hover {
+            background: #c0392b;
+            transform: scale(1.02);
+        }
+
+        /* Empty cart state */
         .empty-cart {
             text-align: center;
             padding: 60px;
@@ -268,7 +325,7 @@
             text-decoration: none;
         }
 
-        /* Responsive */
+        /* Mobile responsive */
         @media (max-width: 768px) {
             .sidebar {
                 width: 100%;
@@ -279,6 +336,7 @@
                 margin-left: 0;
                 padding: 20px;
             }
+            /* Table becomes stacked on mobile */
             .cart-table, .cart-table tbody, .cart-table tr, .cart-table td {
                 display: block;
             }
@@ -301,6 +359,7 @@
             <img src="{{ url_for('static', filename='logo.png') }}" alt="Sip & Go Logo">
             <h3>Sip & Go Junction</h3>
         </div>
+        <!-- Sidebar navigation links -->
         <a href="/main_menu"><i class="fas fa-home"></i> Main Menu</a>
         <a href="/menu"><i class="fas fa-utensils"></i> Menu</a>
         <a href="/cart"><i class="fas fa-shopping-cart"></i> Cart</a>
@@ -311,18 +370,23 @@
     <div class="main-content">
         <h1><i class="fas fa-shopping-cart" style="color: #1abc9c; margin-right: 10px;"></i> Shopping Cart</h1>
 
+        <!-- If cart has items, show cart table -->
         {% if cart and cart.items()|length > 0 %}
         <div class="cart-container">
-            <!-- Order Type Selector -->
+            <!-- Order Type Selector - Professional Buttons -->
             <div class="order-type-selector">
                 <label><i class="fas fa-store"></i> Order Type:</label>
-                <select id="orderType">
-                    <option value="Drink In">🍹 Drink In</option>
-                    <option value="Takeaway" selected>🥡 Takeaway</option>
-                </select>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="order-type-btn" data-type="Drink In" id="drinkInBtn">
+                        <i class="fas fa-mug-hot"></i> Drink In
+                    </button>
+                    <button type="button" class="order-type-btn" data-type="Takeaway" id="takeawayBtn">
+                        <i class="fas fa-box"></i> Takeaway
+                    </button>
+                </div>
             </div>
 
-            <!-- Cart Table -->
+            <!-- Cart items table -->
             <table class="cart-table">
                 <thead>
                     <tr>
@@ -335,6 +399,7 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <!-- Loop through each item in cart -->
                     {% for key, item in cart.items() %}
                     <tr>
                         <td class="item-name">{{ item.name }}</td>
@@ -354,27 +419,41 @@
                 </tbody>
             </table>
 
-            <!-- Total Card -->
+            <!-- Total amount display -->
             <div class="total-card">
                 <h2>Total: <span>{{ "%.2f"|format(total / 100) }} kr</span></h2>
             </div>
 
-            <!-- Payment Section -->
+            <!-- Payment Method - Professional Buttons -->
             <div class="payment-section">
                 <div>
                     <label><i class="fas fa-credit-card"></i> Payment Method:</label>
-                    <select name="payment_method" id="paymentMethod">
-                        <option value="Card">💳 Card</option>
-                        <option value="Cash">💵 Cash</option>
-                        <option value="Mobile">📱 Mobile</option>
-                    </select>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button type="button" class="payment-btn" data-method="Card" id="cardBtn">
+                            <i class="fas fa-credit-card"></i> Card
+                        </button>
+                        <button type="button" class="payment-btn" data-method="Cash" id="cashBtn">
+                            <i class="fas fa-money-bill-wave"></i> Cash
+                        </button>
+                        <button type="button" class="payment-btn" data-method="Mobile" id="mobileBtn">
+                            <i class="fas fa-mobile-alt"></i> Mobile
+                        </button>
+                    </div>
+                    <input type="hidden" name="payment_method" id="paymentMethodHidden" value="Card">
                 </div>
-                <button type="submit" class="place-order-btn" id="placeOrderBtn">
-                    <i class="fas fa-check-circle"></i> Place Order
-                </button>
+                <div style="display: flex; gap: 10px;">
+                    <!-- Clear Cart button -->
+                    <button type="button" id="clearCartBtn" class="clear-cart-btn">
+                        <i class="fas fa-trash-alt"></i> Clear Cart
+                    </button>
+                    <button type="button" class="place-order-btn" id="placeOrderBtn">
+                        <i class="fas fa-check-circle"></i> Place Order
+                    </button>
+                </div>
             </div>
         </div>
         {% else %}
+        <!-- Empty cart state -->
         <div class="empty-cart">
             <i class="fas fa-shopping-cart"></i>
             <p>Your cart is empty</p>
@@ -384,7 +463,7 @@
     </div>
 
     <script>
-        // Update quantity
+        // Update quantity - sends AJAX request to update item quantity
         document.querySelectorAll('.qty-input').forEach(input => {
             input.addEventListener('change', function() {
                 let key = this.dataset.key;
@@ -397,7 +476,7 @@
             });
         });
 
-        // Remove item
+        // Remove item - sends AJAX request to remove single item from cart
         document.querySelectorAll('.remove-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 let key = this.dataset.key;
@@ -405,23 +484,75 @@
             });
         });
 
-        // Order type change
-        const orderTypeSelect = document.getElementById('orderType');
-        if (orderTypeSelect) {
-            orderTypeSelect.addEventListener('change', function() {
-                fetch('/set_order_type', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({order_type: this.value})
-                });
+        // Order Type button selection
+        const drinkInBtn = document.getElementById('drinkInBtn');
+        const takeawayBtn = document.getElementById('takeawayBtn');
+        let selectedOrderType = 'Takeaway';
+
+        function setOrderType(type, activeBtn, inactiveBtn) {
+            selectedOrderType = type;
+            activeBtn.classList.add('active');
+            inactiveBtn.classList.remove('active');
+            fetch('/set_order_type', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({order_type: type})
             });
         }
 
-        // Place order button
+        if (drinkInBtn && takeawayBtn) {
+            drinkInBtn.addEventListener('click', () => setOrderType('Drink In', drinkInBtn, takeawayBtn));
+            takeawayBtn.addEventListener('click', () => setOrderType('Takeaway', takeawayBtn, drinkInBtn));
+            // Set default active button
+            takeawayBtn.classList.add('active');
+        }
+
+        // Payment Method button selection
+        const cardBtn = document.getElementById('cardBtn');
+        const cashBtn = document.getElementById('cashBtn');
+        const mobileBtn = document.getElementById('mobileBtn');
+        const paymentMethodHidden = document.getElementById('paymentMethodHidden');
+
+        function setPaymentMethod(method, activeBtn, btn2, btn3) {
+            paymentMethodHidden.value = method;
+            activeBtn.classList.add('active');
+            btn2.classList.remove('active');
+            btn3.classList.remove('active');
+        }
+
+        if (cardBtn && cashBtn && mobileBtn) {
+            cardBtn.addEventListener('click', () => setPaymentMethod('Card', cardBtn, cashBtn, mobileBtn));
+            cashBtn.addEventListener('click', () => setPaymentMethod('Cash', cashBtn, cardBtn, mobileBtn));
+            mobileBtn.addEventListener('click', () => setPaymentMethod('Mobile', mobileBtn, cardBtn, cashBtn));
+            // Set default active button
+            cardBtn.classList.add('active');
+            paymentMethodHidden.value = 'Card';
+        }
+
+        // Clear Cart button - clears all items from cart with confirmation
+        const clearCartBtn = document.getElementById('clearCartBtn');
+        if (clearCartBtn) {
+            clearCartBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to clear your entire cart? This cannot be undone.')) {
+                    fetch('/clear_cart', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'}
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        }
+                    });
+                }
+            });
+        }
+
+        // Place order button - creates form and submits to place_order route
         const placeOrderBtn = document.getElementById('placeOrderBtn');
         if (placeOrderBtn) {
             placeOrderBtn.addEventListener('click', function() {
-                const paymentMethod = document.getElementById('paymentMethod').value;
+                const paymentMethod = paymentMethodHidden.value;
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '/place_order';

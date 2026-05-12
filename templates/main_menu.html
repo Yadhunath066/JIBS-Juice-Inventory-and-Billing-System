@@ -3,13 +3,17 @@
 <head>
     <title>Main Menu - JIBS</title>
     <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <!-- Poppins font for modern look -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Poppins', sans-serif;
+            /* Animated gradient background */
             background: linear-gradient(135deg, #1abc9c, #2c3e50, #16a085);
             background-size: 200% 200%;
             animation: gradientMove 10s ease infinite;
@@ -20,12 +24,14 @@
             padding: 20px;
         }
 
+        /* Background color transition animation */
         @keyframes gradientMove {
             0% { background-position: 0% 50%; }
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
 
+        /* White dashboard card in center */
         .dashboard {
             background: white;
             border-radius: 30px;
@@ -37,6 +43,7 @@
             animation: fadeInUp 0.6s ease-out;
         }
 
+        /* Fade in animation */
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -48,11 +55,13 @@
             }
         }
 
+        /* Company logo */
         .logo {
             width: 100px;
             margin-bottom: 20px;
         }
 
+        /* Company name */
         h1 {
             color: #2c3e50;
             font-size: 28px;
@@ -60,6 +69,7 @@
             margin-bottom: 5px;
         }
 
+        /* Welcome message with cashier name */
         .greeting {
             background: #ecf0f1;
             display: inline-block;
@@ -76,6 +86,7 @@
             margin-right: 8px;
         }
 
+        /* Three menu cards in a row */
         .menu-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -83,6 +94,7 @@
             margin-bottom: 30px;
         }
 
+        /* Individual menu card */
         .menu-card {
             background: #f8f9fa;
             padding: 20px 10px;
@@ -96,6 +108,7 @@
             border: 1px solid #e9ecef;
         }
 
+        /* Hover effect - card lifts and turns green */
         .menu-card:hover {
             background: #1abc9c;
             color: white;
@@ -103,6 +116,7 @@
             border-color: #1abc9c;
         }
 
+        /* Icon inside menu card */
         .menu-icon {
             font-size: 32px;
             margin-bottom: 10px;
@@ -113,6 +127,7 @@
             font-weight: 500;
         }
 
+        /* Logout button */
         .logout {
             background: #e74c3c;
             color: white;
@@ -135,6 +150,7 @@
             transform: scale(1.02);
         }
 
+        /* Responsive for small screens */
         @media (max-width: 500px) {
             .dashboard { padding: 25px; }
             .menu-grid { gap: 10px; }
@@ -146,12 +162,15 @@
 </head>
 <body>
     <div class="dashboard">
+        <!-- Company logo -->
         <img src="{{ url_for('static', filename='logo.png') }}" alt="Sip & Go Logo" class="logo">
         <h1>Sip & Go Junction</h1>
+        <!-- Welcome message - shows cashier name from session -->
         <div class="greeting">
             <i class="fas fa-user-check"></i> Welcome, {{ staff_name }}!
         </div>
 
+        <!-- Navigation cards -->
         <div class="menu-grid">
             <a href="/menu" class="menu-card">
                 <div class="menu-icon"><i class="fas fa-utensils"></i></div>
@@ -167,6 +186,7 @@
             </a>
         </div>
 
+        <!-- Logout form -->
         <form action="/logout" method="GET">
             <button type="submit" class="logout">
                 <i class="fas fa-sign-out-alt"></i> Logout

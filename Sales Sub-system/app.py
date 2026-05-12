@@ -10,7 +10,7 @@ from datetime import datetime
 import sqlite3
 import requests
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='.')
 app.secret_key = 'jibs-secret-key-2026'
 
 # ============ DATABASE SETUP ============

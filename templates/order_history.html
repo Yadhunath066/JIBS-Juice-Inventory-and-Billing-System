@@ -3,171 +3,312 @@
 <head>
     <title>Order History - JIBS</title>
     <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f0f2f5;
+        }
+
+        /* Sidebar */
         .sidebar {
-            width: 250px;
-            background: #2c3e50;
+            width: 280px;
+            background: #1a252f;
             color: white;
             position: fixed;
             height: 100%;
-            padding: 20px 0;
+            padding: 25px 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
         }
-        .sidebar h2 { text-align: center; margin-bottom: 30px; color: #1abc9c; }
+
+        .sidebar-logo {
+            text-align: center;
+            padding: 0 20px 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-logo img {
+            width: 100px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+
+        .sidebar-logo h3 {
+            color: #1abc9c;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
         .sidebar a {
-            display: block;
-            padding: 12px 20px;
-            color: white;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 25px;
+            color: #ecf0f1;
             text-decoration: none;
-            transition: 0.3s;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            font-weight: 500;
         }
-        .sidebar a:hover { background: #1abc9c; padding-left: 30px; }
+
+        .sidebar a i {
+            width: 20px;
+            font-size: 16px;
+        }
+
+        .sidebar a:hover {
+            background: #1abc9c;
+            color: white;
+            padding-left: 35px;
+        }
+
+        /* Main Content */
         .main-content {
-            margin-left: 250px;
-            padding: 30px;
+            margin-left: 280px;
+            padding: 30px 40px;
         }
+
         h1 {
             color: #2c3e50;
-            margin-bottom: 20px;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 30px;
             border-left: 5px solid #1abc9c;
-            padding-left: 15px;
+            padding-left: 20px;
         }
+
+        /* Search and Filter */
         .search-box, .filter-box {
             background: white;
-            padding: 15px;
-            border-radius: 10px;
+            padding: 20px;
+            border-radius: 16px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
         .search-box input {
-            padding: 8px;
-            width: 200px;
+            flex: 1;
+            padding: 12px 15px;
             border: 1px solid #ddd;
-            border-radius: 5px;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
         }
+
         .search-box button, .filter-box button {
-            background: #3498db;
+            background: #1abc9c;
             color: white;
             border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
+            padding: 10px 20px;
+            border-radius: 10px;
             cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
         }
+
+        .filter-box {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
         .filter-box label {
-            margin-right: 5px;
-            font-weight: bold;
+            font-weight: 600;
+            color: #2c3e50;
         }
+
         .filter-box input {
-            padding: 6px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            margin-right: 15px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
         }
+
         .filter-box a {
             background: #95a5a6;
             color: white;
             padding: 8px 15px;
-            border-radius: 5px;
+            border-radius: 8px;
             text-decoration: none;
-            margin-left: 5px;
         }
-        table {
+
+        /* Table */
+        .order-table {
             width: 100%;
             background: white;
-            border-radius: 10px;
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
         }
-        th {
-            background: #2c3e50;
-            color: white;
-            padding: 12px;
+
+        .order-table th {
+            background: #f8f9fa;
+            color: #2c3e50;
+            padding: 15px;
             text-align: left;
+            font-weight: 600;
+            font-size: 14px;
         }
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
+
+        .order-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
         }
+
+        .order-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            background: #d4edda;
+            color: #155724;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
         .view-link {
             background: #1abc9c;
             color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
+            padding: 6px 15px;
+            border-radius: 8px;
             text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
         }
+
+        .view-link:hover {
+            background: #16a085;
+        }
+
         .error {
             background: #f8d7da;
             color: #721c24;
-            padding: 10px;
-            border-radius: 5px;
+            padding: 12px;
+            border-radius: 10px;
             margin-bottom: 20px;
         }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            background: white;
+            border-radius: 20px;
+        }
+
+        .empty-state i {
+            font-size: 60px;
+            color: #bdc3c7;
+            margin-bottom: 15px;
+        }
+
         @media (max-width: 768px) {
-            .sidebar { width: 100%; height: auto; position: relative; }
-            .main-content { margin-left: 0; }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+            .order-table, .order-table tbody, .order-table tr, .order-table td {
+                display: block;
+            }
+            .order-table th {
+                display: none;
+            }
+            .order-table td {
+                display: flex;
+                justify-content: space-between;
+                padding: 10px;
+            }
         }
     </style>
 </head>
 <body>
+
     <div class="sidebar">
-        <h2>🥤 JIBS</h2>
-        <a href="/main_menu">🏠 Main Menu</a>
-        <a href="/menu">📋 Menu</a>
-        <a href="/cart">🛒 Cart</a>
-        <a href="/order_history">📜 Orders</a>
-        <a href="/logout">🚪 Logout</a>
+        <div class="sidebar-logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Sip & Go Logo">
+            <h3>Sip & Go Junction</h3>
+        </div>
+        <a href="/main_menu"><i class="fas fa-home"></i> Main Menu</a>
+        <a href="/menu"><i class="fas fa-utensils"></i> Menu</a>
+        <a href="/cart"><i class="fas fa-shopping-cart"></i> Cart</a>
+        <a href="/order_history"><i class="fas fa-history"></i> Orders</a>
+        <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
-    
+
     <div class="main-content">
-        <h1>Order History</h1>
-        
+        <h1><i class="fas fa-history" style="color: #1abc9c; margin-right: 10px;"></i> Order History</h1>
+
         <!-- Search by Order ID -->
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="Enter Order ID (e.g., 1)">
-            <button onclick="searchOrder()">🔍 Search</button>
-            <button onclick="clearSearch()">🗑️ Clear</button>
+            <button onclick="searchOrder()"><i class="fas fa-search"></i> Search</button>
+            <button onclick="clearSearch()" style="background:#95a5a6;"><i class="fas fa-eraser"></i> Clear</button>
         </div>
-        
+
         <!-- Date-Time Range Filter -->
         <div class="filter-box">
-            <label>From:</label>
+            <label><i class="fas fa-calendar-alt"></i> From:</label>
             <input type="datetime-local" id="fromDateTime" value="2026-05-01T00:00">
             <label>To:</label>
             <input type="datetime-local" id="toDateTime" value="2026-05-03T23:59">
-            <button id="applyFilterBtn">Apply Filter</button>
-            <a href="/order_history">Reset</a>
+            <button id="applyFilterBtn"><i class="fas fa-filter"></i> Apply Filter</button>
+            <a href="/order_history"><i class="fas fa-redo-alt"></i> Reset</a>
         </div>
-        
+
         {% if error %}
         <div class="error">{{ error }}</div>
         {% endif %}
-        
+
         {% if orders %}
-        <table>
+        <table class="order-table">
             <thead>
-                <tr><th>Order ID</th><th>Date & Time</th><th>Total</th><th>Payment</th><th>Status</th><th>Action</th></tr>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Date & Time</th>
+                    <th>Total</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
             </thead>
             <tbody>
                 {% for order in orders %}
                 <tr>
-                    <td>#{{ order.SaleID }}</td>
+                    <td><span style="font-weight: 600;">#{{ order.SaleID }}</span></td>
                     <td>{{ order.SaleDate }}</td>
-                    <td>{{ "%.2f"|format(order.TotalAmount / 100) }} kr</td>
+                    <td><span style="font-weight: 600; color: #1abc9c;">{{ "%.2f"|format(order.TotalAmount / 100) }} kr</span></td>
                     <td>{{ order.PaymentMethod }}</td>
-                    <td><span style="color:#1abc9c;">✔ Completed</span></td>
-                    <td><a href="/order_details/{{ order.SaleID }}" class="view-link">View</a></td>
+                    <td><span class="status-badge">✓ Completed</span></td>
+                    <td><a href="/order_details/{{ order.SaleID }}" class="view-link"><i class="fas fa-eye"></i> View</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
         {% else %}
-        <div style="text-align:center; padding:50px; background:white; border-radius:10px;">
-            <p>📭 No orders found.</p>
+        <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <p>No orders found</p>
         </div>
         {% endif %}
     </div>
-    
+
     <script>
         function searchOrder() {
             let saleId = document.getElementById('searchInput').value;

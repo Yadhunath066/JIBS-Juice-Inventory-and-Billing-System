@@ -3,24 +3,90 @@
 <head>
     <title>Login - JIBS</title>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #1abc9c, #2c3e50);
-            height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            background: #1a252f;
+        }
+
+        /* Split Screen Layout */
+        .split-screen {
+            display: flex;
+            min-height: 100vh;
+            flex-wrap: wrap;
+        }
+
+        /* Left Side - Video */
+        .video-side {
+            flex: 1;
+            min-height: 40vh;
+            position: relative;
+            background: #1a252f;
+        }
+
+        .video-side video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .video-text {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: white;
+            z-index: 2;
+            padding: 0 20px;
+        }
+
+        .video-text h2 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .video-text p {
+            font-size: 14px;
+            opacity: 0.85;
+        }
+
+        /* Right Side - Login Form */
+        .login-side {
+            flex: 1;
+            background: white;
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 40px 20px;
+            min-height: 60vh;
         }
+
         .login-card {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            width: 350px;
+            width: 100%;
+            max-width: 380px;
             text-align: center;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
         }
+<<<<<<< HEAD
         .logo {
             width: 80px;
             height: auto;
@@ -28,42 +94,173 @@
             border-radius: 10px;
         }
         .login-card h1 {
-            color: #2c3e50;
-            margin-bottom: 10px;
+=======
+
+        .logo {
+            width: 90px;
+            margin-bottom: 20px;
         }
-        .login-card p {
+
+        .system-title {
+            font-size: 20px;
+            font-weight: 700;
+>>>>>>> 068d033e50fa334607c2c6e2b0ffe4899dec58d8
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .company-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1abc9c;
+            margin-bottom: 8px;
+        }
+
+        .tagline {
+            font-size: 13px;
             color: #7f8c8d;
             margin-bottom: 30px;
+            font-weight: 500;
         }
-        input {
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .input-group label i {
+            margin-right: 8px;
+            color: #1abc9c;
+        }
+
+        .input-group input {
             width: 100%;
-            padding: 12px;
-            margin: 10px 0;
+            padding: 12px 15px;
             border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: 0.3s;
+            font-family: 'Poppins', sans-serif;
         }
-        button {
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #1abc9c;
+            box-shadow: 0 0 8px rgba(26, 188, 156, 0.3);
+        }
+
+        .login-btn {
             width: 100%;
             background: #1abc9c;
             color: white;
             border: none;
             padding: 12px;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
             transition: 0.3s;
-        }
-        button:hover {
-            background: #16a085;
-        }
-        .error {
-            color: #e74c3c;
             margin-top: 10px;
+        }
+
+        .login-btn i {
+            margin-right: 8px;
+        }
+
+        .login-btn:hover {
+            background: #16a085;
+            transform: scale(1.02);
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .footer {
+            margin-top: 25px;
+            font-size: 11px;
+            color: #95a5a6;
+        }
+
+        /* Tablet (768px to 1024px) */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .video-text h2 {
+                font-size: 20px;
+            }
+            .video-text p {
+                font-size: 12px;
+            }
+            .login-card {
+                max-width: 320px;
+            }
+        }
+
+        /* Mobile (up to 767px) */
+        @media (max-width: 767px) {
+            .split-screen {
+                flex-direction: column;
+            }
+            .video-side {
+                min-height: 280px;
+            }
+            .video-text {
+                bottom: 15px;
+            }
+            .video-text h2 {
+                font-size: 18px;
+            }
+            .video-text p {
+                font-size: 11px;
+            }
+            .login-side {
+                padding: 30px 20px;
+            }
+            .login-card {
+                max-width: 100%;
+            }
+            .system-title {
+                font-size: 18px;
+            }
+        }
+
+        /* Small mobile (up to 480px) */
+        @media (max-width: 480px) {
+            .video-side {
+                min-height: 240px;
+            }
+            .video-text h2 {
+                font-size: 16px;
+            }
+            .login-side {
+                padding: 25px 15px;
+            }
+            .logo {
+                width: 70px;
+            }
+            .system-title {
+                font-size: 16px;
+            }
+            .company-name {
+                font-size: 14px;
+            }
         }
     </style>
 </head>
 <body>
+<<<<<<< HEAD
     <div class="login-card">
         <img src="/static/logo.jpg" alt="Sip & Go Logo" class="logo">
         <h1>JIBS</h1>
@@ -76,6 +273,51 @@
             <input type="password" name="password" placeholder="Password" required>
             <button type="submit">Login</button>
         </form>
+=======
+
+    <div class="split-screen">
+
+        <!-- Left Side: Video -->
+        <div class="video-side">
+            <video autoplay loop muted playsinline style="width: 100%; height: 100%; object-fit: cover;">
+                <source src="{{ url_for('static', filename='background.mp4') }}" type="video/mp4">
+            </video>
+            <div class="video-overlay"></div>
+            <div class="video-text">
+                <h2>Fresh Juice. Natural Taste.</h2>
+                <p>Handcrafted with love since 2006</p>
+            </div>
+        </div>
+
+        <!-- Right Side: Login Form -->
+        <div class="login-side">
+            <div class="login-card">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Sip & Go Logo" class="logo">
+                <div class="system-title">Juice Inventory & Billing System</div>
+                <div class="company-name">Sip & Go Junction</div>
+                <div class="tagline">Fresh & Natural</div>
+
+                {% if error %}
+                <div class="error">{{ error }}</div>
+                {% endif %}
+
+                <form method="POST">
+                    <div class="input-group">
+                        <label><i class="fas fa-user"></i> Username</label>
+                        <input type="text" name="username" placeholder="Enter username" required>
+                    </div>
+                    <div class="input-group">
+                        <label><i class="fas fa-lock"></i> Password</label>
+                        <input type="password" name="password" placeholder="Enter password" required>
+                    </div>
+                    <button type="submit" class="login-btn"><i class="fas fa-sign-in-alt"></i> Login</button>
+                </form>
+                <div class="footer">© 2026 Sip & Go Junction | JIBS System</div>
+            </div>
+        </div>
+
+>>>>>>> 068d033e50fa334607c2c6e2b0ffe4899dec58d8
     </div>
+
 </body>
 </html>

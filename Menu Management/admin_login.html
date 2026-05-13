@@ -3,6 +3,7 @@
 <head>
     <title>Admin Login - Menu Management</title>
     <style>
+        /* Gradient background - dark blue to green */
         body {
             font-family: Arial, sans-serif;
             display: flex;
@@ -12,6 +13,7 @@
             background: linear-gradient(135deg, #2c3e50, #1abc9c);
             margin: 0;
         }
+        /* White card in center */
         .login-box {
             background: white;
             padding: 40px;
@@ -24,6 +26,7 @@
             color: #2c3e50;
             margin-bottom: 20px;
         }
+        /* Input fields - full width with rounded corners */
         input {
             width: 100%;
             padding: 12px;
@@ -33,6 +36,7 @@
             font-size: 14px;
             box-sizing: border-box;
         }
+        /* Login button - green */
         button {
             background: #1abc9c;
             color: white;
@@ -47,6 +51,7 @@
         button:hover {
             background: #16a085;
         }
+        /* Error message - red text */
         .error {
             color: #e74c3c;
             margin-top: 10px;
@@ -58,9 +63,11 @@
     <div class="login-box">
         <h2>Menu Management Login</h2>
         <p>JIBS Juice Bar</p>
+        <!-- Display error message if login fails -->
         {% if error %}
         <p class="error">{{ error }}</p>
         {% endif %}
+        <!-- Login form - submits to /admin/login route -->
         <form method="POST">
             <input type="text" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password" required>

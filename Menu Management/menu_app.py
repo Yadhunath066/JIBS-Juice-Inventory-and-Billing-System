@@ -2,7 +2,9 @@ from flask import Flask, jsonify, request, render_template, redirect, url_for, s
 import sqlite3
 from functools import wraps
 
-app = Flask(__name__)
+# ============ FIX 1: Added template_folder='.' and static_folder='static' ============
+# This tells Flask to look for HTML files in the same folder as app.py
+app = Flask(__name__, template_folder='.', static_folder='static')
 app.secret_key = 'menu-secret-key-2026'
 
 def get_db():
@@ -23,6 +25,7 @@ ADMIN_PASSWORD = "admin123"
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
+    """Admin login page - authenticates admin user"""
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
@@ -37,12 +40,14 @@ def admin_login():
 
 @app.route('/admin/logout')
 def admin_logout():
+    """Clear admin session and redirect to login"""
     session.clear()
     return redirect(url_for('admin_login'))
 
 # ============ M11: API FOR SANJAYA (NO LOGIN REQUIRED) ============
 @app.route('/api/menu_items', methods=['GET'])
 def get_menu_items():
+    """API endpoint for Sanjaya's Sales system - returns all active menu items"""
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("SELECT Name, PriceSm, PriceReg, PriceLg, Category, IsVegan FROM tblMenuItem WHERE IsActive = 1")
@@ -66,17 +71,20 @@ def get_menu_items():
 
 @app.route('/')
 def home():
+    """Home page - shows API status"""
     return "Menu API is running! Go to /admin/login to manage items"
 
 # ============ CUSTOMER MENU PAGE ============
 @app.route('/customer-menu')
 def customer_menu():
+    """Public customer menu display page"""
     return render_template('customer_menu.html')
 
 # ============ M4: LIST ALL MENU ITEMS (WITH FILTER, SEARCH & VEGAN) ============
 @app.route('/admin/menu')
 @login_required
 def list_menu():
+    """Admin menu list page - supports category, search, and vegan filters"""
     conn = get_db()
     cursor = conn.cursor()
     
@@ -101,6 +109,7 @@ def list_menu():
 @app.route('/admin/menu/add', methods=['GET', 'POST'])
 @login_required
 def add_menu_item():
+    """Add new menu item - Admin can add juice with sizes and prices"""
     if request.method == 'POST':
         name = request.form['name']
         price_sm = int(float(request.form['price_sm']) * 100)
@@ -126,6 +135,7 @@ def add_menu_item():
 @app.route('/admin/menu/edit/<int:item_id>', methods=['GET', 'POST'])
 @login_required
 def edit_menu_item(item_id):
+    """Edit existing menu item - Update price, name, category, vegan status"""
     conn = get_db()
     cursor = conn.cursor()
     
@@ -157,6 +167,7 @@ def edit_menu_item(item_id):
 @app.route('/admin/menu/delete/<int:item_id>')
 @login_required
 def delete_menu_item(item_id):
+    """Soft delete - sets IsActive to 0 instead of deleting from database"""
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute("UPDATE tblMenuItem SET IsActive = 0 WHERE ItemID = ?", (item_id,))
@@ -164,5 +175,6 @@ def delete_menu_item(item_id):
     conn.close()
     return redirect('/admin/menu')
 
+# ============ FIX 2: Port changed to 5002 ============
 if __name__ == '__main__':
     app.run(debug=True, port=5002)

@@ -10,7 +10,7 @@ from datetime import datetime
 import sqlite3
 import requests
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='.')
 app.secret_key = 'jibs-secret-key-2026'
 
 # ============ DATABASE SETUP ============
@@ -162,8 +162,8 @@ def login():
             session['staff_name'] = 'Cashier'
             return redirect(url_for('main_menu'))
         else:
-            return render_template('login.html', error='  ⚠️ The username or password you entered is incorrect. Please try again later.')
-    return render_template('login.html')
+            return render_template('s_login.html', error='  ⚠️ The username or password you entered is incorrect. Please try again later.')
+    return render_template('s_login.html')
 
 @app.route('/logout')
 def logout():
@@ -192,7 +192,7 @@ def menu():
     if 'staff_id' not in session:
         return redirect(url_for('login'))
     menu_data = get_menu_from_monika()
-    return render_template('menu.html', menu=menu_data)
+    return render_template('s_menu.html', menu=menu_data)
 
 # ============ ADD TO CART (AJAX) ============
 

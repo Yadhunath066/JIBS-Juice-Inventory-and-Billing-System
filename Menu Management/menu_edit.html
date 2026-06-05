@@ -1,46 +1,466 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Edit Menu Item</title>
+    <title>Edit Menu Item - JIBS Menu Management</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial; padding: 20px; }
-        input, select { padding: 5px; margin: 5px; width: 200px; }
-        button { padding: 8px 15px; background: blue; color: white; border: none; cursor: pointer; }
+        /* ========================================
+           GLOBAL RESET & BASE STYLES
+           ======================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: #060d0a;
+            min-height: 100vh;
+            padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* ========================================
+           VIDEO BACKGROUND SECTION
+           Full-screen video background with overlay
+           ======================================== */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+        }
+        
+        .video-background video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: cover;
+        }
+        
+        /* Dark overlay to improve text readability */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: -1;
+        }
+        
+        /* ========================================
+           MAIN CONTAINER
+           ======================================== */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* ========================================
+           PAGE HEADER
+           ======================================== */
+        .page-header {
+            margin-bottom: 25px;
+        }
+        
+        .page-header h1 {
+            font-size: 28px;
+            color: #f8fafc;
+            border-left: 5px solid #22c55e;
+            padding-left: 15px;
+        }
+        
+        /* ========================================
+           GLASS MORPHISM FORM CARD
+           Frosted glass effect for the form container
+           ======================================== */
+        .form-card {
+            background: rgba(15, 26, 22, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 30px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-card:hover {
+            border-color: rgba(34, 197, 94, 0.3);
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.1);
+        }
+        
+        /* ========================================
+           FORM GROUP STYLES
+           ======================================== */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        /* Label styling - light grey, small font */
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #94a3b8;
+            font-size: 13px;
+        }
+        
+        /* ========================================
+           FLOATING LABEL INPUT FIELDS
+           Labels move up when user types or focuses
+           ======================================== */
+        .floating-group {
+            position: relative;
+        }
+        
+        .floating-group input,
+        .floating-group select {
+            width: 100%;
+            padding: 16px 12px 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            font-size: 15px;
+            color: #f8fafc;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        
+        .floating-group select {
+            padding: 14px 12px 8px;
+            cursor: pointer;
+        }
+        
+        /* Green glow effect on focus */
+        .floating-group input:focus,
+        .floating-group select:focus {
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        }
+        
+        /* Label positioned inside the input field */
+        .floating-group label {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: #94a3b8;
+            transition: all 0.2s ease;
+            pointer-events: none;
+            display: block;
+            margin-bottom: 0;
+        }
+        
+        /* Label moves up when input has content or is focused */
+        .floating-group input:focus + label,
+        .floating-group input:not(:placeholder-shown) + label,
+        .floating-group select:focus + label,
+        .floating-group select:not([value=""]) + label {
+            top: 8px;
+            transform: translateY(0);
+            font-size: 10px;
+            color: #22c55e;
+        }
+        
+        /* ========================================
+           CHECKBOX GROUP STYLES
+           ======================================== */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 5px;
+        }
+        
+        .checkbox-group input {
+            width: auto;
+            cursor: pointer;
+        }
+        
+        .checkbox-group label {
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+        
+        /* ========================================
+           BUTTON STYLES
+           Primary button with shimmer effect
+           ======================================== */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+            font-size: 14px;
+        }
+        
+        /* Primary button - emerald green */
+        .btn-primary {
+            background: #22c55e;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary:hover {
+            background: #16a34a;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);
+        }
+        
+        /* Shimmer effect on button */
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+        
+        /* Secondary button - outline style */
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #f8fafc;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #22c55e;
+            transform: translateY(-2px);
+        }
+        
+        /* ========================================
+           BACK LINK STYLES
+           ======================================== */
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        .back-link:hover {
+            color: #22c55e;
+            text-decoration: underline;
+        }
+        
+        /* ========================================
+           RESPONSIVE DESIGN
+           Adjusts layout for mobile screens
+           ======================================== */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 10px;
+            }
+            
+            .form-card {
+                padding: 20px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                justify-content: center;
+            }
+        }
+        
+        /* ========================================
+           CUSTOM SCROLLBAR
+           ======================================== */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #0f1a16;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #22c55e;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
-    <h1>Edit Menu Item</h1>
-    <form method="POST">
-        <label>Name:</label><br>
-        <input type="text" name="name" value="{{ item[1] }}" required><br>
+    <!-- ========================================
+         VIDEO BACKGROUND
+         ======================================== -->
+    <div class="video-background">
+        <video autoplay muted loop playsinline>
+            <source src="{{ url_for('static', filename='video.mp4') }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <div class="overlay"></div>
+    
+    <!-- ========================================
+         MAIN CONTAINER
+         ======================================== -->
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>Edit Menu Item</h1>
+        </div>
         
-        <label>Price Small (kr):</label><br>
-        <input type="number" step="0.01" name="price_sm" value="{{ item[2] / 100 }}" required><br>
-        
-        <label>Price Regular (kr):</label><br>
-        <input type="number" step="0.01" name="price_reg" value="{{ item[3] / 100 }}" required><br>
-        
-        <label>Price Large (kr):</label><br>
-        <input type="number" step="0.01" name="price_lg" value="{{ item[4] / 100 }}" required><br>
-        
-        <label>Category:</label><br>
-        <select name="category">
-            <option value="Fresh Fruit Juices" {{ 'selected' if item[5] == 'Fresh Fruit Juices' else '' }}>Fresh Fruit Juices</option>
-            <option value="Sugarcane Juice" {{ 'selected' if item[5] == 'Sugarcane Juice' else '' }}>Sugarcane Juice</option>
-            <option value="Smoothies & Shakes" {{ 'selected' if item[5] == 'Smoothies & Shakes' else '' }}>Smoothies & Shakes</option>
-        </select><br>
-        
-        <label>
-            <input type="checkbox" name="is_vegan" {{ 'checked' if item[6] else '' }}> Vegan
-        </label><br>
-        
-        <label>
-            <input type="checkbox" name="is_active" {{ 'checked' if item[7] else '' }}> Active (show on menu)
-        </label><br><br>
-        
-        <button type="submit">Update Menu Item</button>
-    </form>
-    <br>
-    <a href="/admin/menu">Back to Menu List</a>
+        <!-- Glassmorphism Form Card -->
+        <div class="form-card">
+            <!-- ========================================
+                 EDIT MENU ITEM FORM
+                 Submits to /admin/menu/edit/<item_id> route
+                 ======================================== -->
+            <form method="POST">
+                <!-- ========================================
+                     MENU ITEM NAME FIELD
+                     Pre-filled with current name
+                     ======================================== -->
+                <div class="form-group floating-group">
+                    <input type="text" id="name" name="name" value="{{ item[1] }}" required placeholder=" ">
+                    <label for="name">Item Name</label>
+                </div>
+                
+                <!-- ========================================
+                     PRICE FIELDS (Three sizes: Small, Regular, Large)
+                     Prices are stored in øre in database (1 DKK = 100 øre)
+                     Displayed in DKK for user convenience
+                     ======================================== -->
+                <div class="form-group floating-group">
+                    <input type="number" id="priceSm" name="price_sm" value="{{ item[2] / 100 }}" step="0.01" required placeholder=" ">
+                    <label for="priceSm">Price Small (DKK)</label>
+                </div>
+                
+                <div class="form-group floating-group">
+                    <input type="number" id="priceReg" name="price_reg" value="{{ item[3] / 100 }}" step="0.01" required placeholder=" ">
+                    <label for="priceReg">Price Regular (DKK)</label>
+                </div>
+                
+                <div class="form-group floating-group">
+                    <input type="number" id="priceLg" name="price_lg" value="{{ item[4] / 100 }}" step="0.01" required placeholder=" ">
+                    <label for="priceLg">Price Large (DKK)</label>
+                </div>
+                
+                <!-- ========================================
+                     CATEGORY DROPDOWN
+                     Pre-selects the current category
+                     Categories match the PDF menu structure
+                     ======================================== -->
+                <div class="form-group floating-group">
+                    <select id="category" name="category" required>
+                        <option value="Fresh Fruit Juices" {% if item[5] == 'Fresh Fruit Juices' %}selected{% endif %}>Fresh Fruit Juices</option>
+                        <option value="Sugarcane Juice" {% if item[5] == 'Sugarcane Juice' %}selected{% endif %}>Sugarcane Juice</option>
+                        <option value="Smoothies & Shakes" {% if item[5] == 'Smoothies & Shakes' %}selected{% endif %}>Smoothies & Shakes</option>
+                    </select>
+                    <label for="category">Category</label>
+                </div>
+                
+                <!-- ========================================
+                     VEGAN CHECKBOX
+                     Indicates if item is vegan-friendly
+                     ======================================== -->
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="isVegan" name="is_vegan" {% if item[6] %}checked{% endif %}>
+                    <label for="isVegan">🌱 Vegan Friendly</label>
+                </div>
+                
+                <!-- ========================================
+                     ACTIVE STATUS CHECKBOX
+                     Controls whether item appears on customer menu
+                     Inactive items are hidden from cashier view
+                     ======================================== -->
+                <div class="form-group checkbox-group">
+                    <input type="checkbox" id="isActive" name="is_active" {% if item[7] %}checked{% endif %}>
+                    <label for="isActive">✅ Active (show on customer menu)</label>
+                </div>
+                
+                <!-- ========================================
+                     FORM BUTTONS
+                     Save changes or cancel back to menu list
+                     ======================================== -->
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">
+                        💾 Update Menu Item
+                    </button>
+                    <a href="/admin/menu" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+            
+            <!-- ========================================
+                 BACK TO MENU LIST LINK
+                 ======================================== -->
+            <div style="margin-top: 20px; text-align: center;">
+                <a href="/admin/menu" class="back-link">← Back to Menu List</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ========================================
+         JAVASCRIPT FOR FLOATING LABELS
+         Initializes placeholder attributes for floating labels
+         ======================================== -->
+    <script>
+        // ========================================
+        // FLOATING LABELS INITIALIZATION
+        // Sets placeholder attribute for inputs with values
+        // ========================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // For all input fields with placeholder=" ", check if they have value
+            document.querySelectorAll('.floating-group input, .floating-group select').forEach(input => {
+                if (input.value) {
+                    input.setAttribute('placeholder', ' ');
+                }
+                
+                // Add placeholder on focus, remove on blur if empty
+                input.addEventListener('focus', () => {
+                    input.setAttribute('placeholder', ' ');
+                });
+                
+                input.addEventListener('blur', () => {
+                    if (!input.value) {
+                        input.removeAttribute('placeholder');
+                    } else {
+                        input.setAttribute('placeholder', ' ');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

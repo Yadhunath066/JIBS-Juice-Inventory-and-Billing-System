@@ -12,19 +12,27 @@
 </head>
 <body>
     <h1>Add New Menu Item</h1>
+     <!-- Form submits to /admin/menu/add route -->
     <form method="POST">
+        <!-- Menu item name field -->
         <label>Name:</label>
         <input type="text" name="name" required>
         
+         <!-- Price for Small size (stored in øre, e.g., 2900 = 29.00 DKK) -->
         <label>Price (Small) in øre (e.g., 2900 = 29.00 kr):</label>
         <input type="number" name="price_sm" required>
         
+
+        <!-- Price for Regular size (stored in øre) -->
         <label>Price (Regular) in øre:</label>
         <input type="number" name="price_reg" required>
         
+
+        <!-- Price for Large size (stored in øre) -->
         <label>Price (Large) in øre:</label>
         <input type="number" name="price_lg" required>
-        
+
+        <!-- Category dropdown - matches the three categories from PDF menu -->
         <label>Category:</label>
         <select name="category">
             <option>Fresh Fruit Juices</option>
@@ -32,12 +40,17 @@
             <option>Smoothies & Shakes</option>
         </select>
         
+        <!-- Checkbox for vegan items -->
         <label>
             <input type="checkbox" name="is_vegan"> Vegan
         </label>
-        
+
+
+        <!-- Submit button to add the new menu item -->
         <button type="submit">Add Item</button>
     </form>
+
+     <!-- Link to go back to admin menu list -->
     <a href="/admin">Back to Admin</a>
 </body>
 </html>

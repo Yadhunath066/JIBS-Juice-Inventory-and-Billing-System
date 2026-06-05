@@ -271,6 +271,7 @@
 </head>
 <body>
     <div class="container">
+         <!-- Header with logo, shop name, and logout -->
         <div class="header">
             <a href="/admin/logout" class="logout-btn" onclick="return confirm('Logout from admin panel?')">🚪 Logout</a>
             
@@ -286,6 +287,7 @@
         <h1> Menu Management</h1>
         <div class="subtitle">Manage your juice bar menu - Add, Edit, Delete items</div>
         
+        <!-- Search bar to find menu items by name -->
         <div class="search-box">
             <form method="GET" action="/admin/menu">
                 <input type="text" name="search" placeholder="🔍 Search by name..." value="{{ request.args.get('search', '') }}">
@@ -294,6 +296,7 @@
             </form>
         </div>
         
+       <!-- Filter buttons for category and vegan only -->
         <div class="filter">
             <strong>📁 Filter by Category:</strong>
             <a href="/admin/menu">All</a>
@@ -303,9 +306,11 @@
             <a href="/admin/menu?vegan=1">🌱 Vegan Only</a>
         </div>
         
+        <!-- Button to add new menu item -->
         <a href="/admin/menu/add" class="add-btn">➕ Add New Item</a>
         
         <div class="table-wrapper">
+            <!-- Check if there are items to display -->
             {% if items %}
             <table>
                 <thead>
@@ -322,17 +327,20 @@
                     </tr>
                 </thead>
                 <tbody>
+                     <!-- Loop through each menu item -->
                     {% for item in items %}
                     <tr>
-                        <td>{{ item[0] }}</td>
-                        <td><strong>{{ item[1] }}</strong></td>
-                        <td>{{ "%.2f"|format(item[2] / 100) }}</td>
-                        <td>{{ "%.2f"|format(item[3] / 100) }}</td>
-                        <td>{{ "%.2f"|format(item[4] / 100) }}</td>
-                        <td>{{ item[5] }}</td>
-                        <td>{{ "Yes" if item[6] else "No" }}</td>
+                        <td>{{ item[0] }}</td> <!-- ItemID -->
+                        <td><strong>{{ item[1] }}</strong></td>  <!-- Name -->
+                        <td>{{ "%.2f"|format(item[2] / 100) }}</td>  <!-- PriceSm (DKK) -->
+                        <td>{{ "%.2f"|format(item[3] / 100) }}</td>  <!-- PriceReg (DKK) -->
+                        <td>{{ "%.2f"|format(item[4] / 100) }}</td>  <!-- PriceLg (DKK) -->
+                        <td>{{ item[5] }}</td> <!-- Category -->
+                        <!-- Status: Active or Inactive based on IsActive -->
+                        <td>{{ "Yes" if item[6] else "No" }}</td>  <!-- IsVegan -->
                         <td class="{{ 'active' if item[7] else 'inactive' }}">{{ "Active" if item[7] else "Inactive" }}</td>
-                        <td>
+                        <td> 
+                            <!-- Edit and Delete buttons -->
                             <a href="/admin/menu/edit/{{ item[0] }}" class="edit-link">✏️ Edit</a>
                             <a href="/admin/menu/delete/{{ item[0] }}" class="delete-link" onclick="return confirm('Delete this item?')">🗑️ Delete</a>
                         </td>
@@ -341,13 +349,26 @@
                 </tbody>
             </table>
             {% else %}
-            <div class="empty-message">
-                <p>🍹 No menu items found.</p>
-                <p>Click "Add New Item" to create your first menu item.</p>
-            </div>
-            {% endif %}
+            <!-- Empty state - shown when no menu items match the current view -->
+<div class="empty-message">
+    <!-- Case 1: User performed a search but found no matches -->
+    {% if request.args.get('search') %}
+   <!-- Display the search term the user entered -->
+        <p>🔍 No items found matching "<strong>{{ request.args.get('search') }}</strong>".</p>
+        <p>Please check your spelling or try a different search term.</p>
+        <!-- Display the search term the user entered -->
+        <p><a href="/admin/menu" style="color: #1abc9c;">← Clear search and show all items</a></p>
+
+        <!-- Case 2: No search performed and database has no menu items -->
+    {% else %}
+        <p>🍹 No menu items found.</p>
+        <p>Click "Add New Item" to create your first menu item.</p>
+    {% endif %}
+</div>
+{% endif %}
         </div>
-        
+
+        <!-- Footer -->
         <div class="footer">
             Sip & Go Junction | JIBS - Juice Inventory & Billing System | © 2026
         </div>

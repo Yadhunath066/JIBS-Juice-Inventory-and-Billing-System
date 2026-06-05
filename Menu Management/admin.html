@@ -16,26 +16,34 @@
 </head>
 <body>
     <h1>Menu Management Admin</h1>
+     <!-- Button to add new menu item -->
     <a href="/admin/add" class="btn-add">+ Add New Item</a>
+     <!-- Link to view customer-facing menu page (opens in new tab) -->
     <a href="/display" target="_blank">View Menu Page</a>
     
+   <!-- Table displaying all menu items -->
     <table>
         <thead>
             <tr><th>ID</th><th>Name</th><th>Sm</th><th>Reg</th><th>Lg</th><th>Category</th><th>Vegan</th><th>Status</th><th>Actions</th></tr>
         </thead>
         <tbody>
+            <!-- Loop through each menu item from database -->
             {% for item in items %}
             <tr>
-                <td>{{ item[0] }}</td>
-                <td>{{ item[1] }}</td>
-                <td>{{ item[2] }} kr</td>
-                <td>{{ item[3] }} kr</td>
-                <td>{{ item[4] }} kr</td>
-                <td>{{ item[5] }}</td>
-                <td>{{ 'Yes' if item[6] else 'No' }}</td>
+                <td>{{ item[0] }}</td>  <!-- ItemID -->
+                <td>{{ item[1] }}</td>  <!-- Name -->
+                <td>{{ item[2] }} kr</td>  <!-- Small price -->
+                <td>{{ item[3] }} kr</td>  <!-- Regular price -->
+                <td>{{ item[4] }} kr</td>  <!-- Large price -->
+                <td>{{ item[5] }}</td>  <!-- Category -->
+                <td>{{ 'Yes' if item[6] else 'No' }}</td>  <!-- IsVegan -->
+                <!-- Status: Active or Inactive based on IsActive flag -->
                 <td class="{{ 'active' if item[7] else 'inactive' }}">{{ 'Active' if item[7] else 'Inactive' }}</td>
                 <td>
+                     <!-- Edit button - goes to edit form for this item -->
                     <a href="/admin/edit/{{ item[0] }}" class="btn-edit">Edit</a>
+
+                                        <!-- Delete button - soft delete with confirmation dialog -->
                     <a href="/admin/delete/{{ item[0] }}" class="btn-delete" onclick="return confirm('Delete this item?')">Delete</a>
                 </td>
             </tr>

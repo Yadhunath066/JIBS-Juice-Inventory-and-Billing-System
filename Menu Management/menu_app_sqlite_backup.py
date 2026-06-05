@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request, render_template, redirect, url_for, session
-import mysql.connector
+import sqlite3
 from functools import wraps
 
 # ============ FIX 1: Added template_folder='.' and static_folder='static' ============
@@ -7,15 +7,9 @@ from functools import wraps
 app = Flask(__name__, template_folder='.', static_folder='static')
 app.secret_key = 'menu-secret-key-2026'
 
-# ============ DATABASE CONNECTION (MySQL) ============
+# Database connection helper
 def get_db():
-    return mysql.connector.connect(
-        host="127.0.0.1",
-        user="root",
-        password="",
-        port="3307",
-        database="jibs_menu"
-    )
+    return sqlite3.connect('menu.db')
 
 # ============ LOGIN DECORATOR ============
 # Protects admin routes - redirects to login if not authenticated
@@ -106,9 +100,9 @@ def list_menu():
     
     # Apply appropriate filter based on parameter
     if category:
-        cursor.execute("SELECT ItemID, Name, PriceSm, PriceReg, PriceLg, Category, IsVegan, IsActive FROM tblMenuItem WHERE Category = %s", (category,))
+        cursor.execute("SELECT ItemID, Name, PriceSm, PriceReg, PriceLg, Category, IsVegan, IsActive FROM tblMenuItem WHERE Category = ?", (category,))
     elif search:
-        cursor.execute("SELECT ItemID, Name, PriceSm, PriceReg, PriceLg, Category, IsVegan, IsActive FROM tblMenuItem WHERE Name LIKE %s", (f'%{search}%',))
+        cursor.execute("SELECT ItemID, Name, PriceSm, PriceReg, PriceLg, Category, IsVegan, IsActive FROM tblMenuItem WHERE Name LIKE ?", (f'%{search}%',))
     elif vegan:
         cursor.execute("SELECT ItemID, Name, PriceSm, PriceReg, PriceLg, Category, IsVegan, IsActive FROM tblMenuItem WHERE IsVegan = 1")
     else:
@@ -136,7 +130,7 @@ def add_menu_item():
         cursor = conn.cursor()
         cursor.execute("""
             INSERT INTO tblMenuItem (Name, PriceSm, PriceReg, PriceLg, Category, IsVegan, IsActive)
-            VALUES (%s, %s, %s, %s, %s, %s, 1)
+            VALUES (?, ?, ?, ?, ?, ?, 1)
         """, (name, price_sm, price_reg, price_lg, category, is_vegan))
         conn.commit()
         conn.close()
@@ -165,15 +159,15 @@ def edit_menu_item(item_id):
         
         cursor.execute("""
             UPDATE tblMenuItem 
-            SET Name = %s, PriceSm = %s, PriceReg = %s, PriceLg = %s, Category = %s, IsVegan = %s, IsActive = %s
-            WHERE ItemID = %s
+            SET Name = ?, PriceSm = ?, PriceReg = ?, PriceLg = ?, Category = ?, IsVegan = ?, IsActive = ?
+            WHERE ItemID = ?
         """, (name, price_sm, price_reg, price_lg, category, is_vegan, is_active, item_id))
         conn.commit()
         conn.close()
         return redirect('/admin/menu')
     
     # Fetch current item data to populate the edit form
-    cursor.execute("SELECT ItemID, Name, PriceSm, PriceReg, PriceLg, Category, IsVegan, IsActive FROM tblMenuItem WHERE ItemID = %s", (item_id,))
+    cursor.execute("SELECT ItemID, Name, PriceSm, PriceReg, PriceLg, Category, IsVegan, IsActive FROM tblMenuItem WHERE ItemID = ?", (item_id,))
     item = cursor.fetchone()
     conn.close()
     
@@ -186,7 +180,7 @@ def delete_menu_item(item_id):
     """Soft delete - sets IsActive to 0 instead of deleting from database"""
     conn = get_db()
     cursor = conn.cursor()
-    cursor.execute("UPDATE tblMenuItem SET IsActive = 0 WHERE ItemID = %s", (item_id,))
+    cursor.execute("UPDATE tblMenuItem SET IsActive = 0 WHERE ItemID = ?", (item_id,))
     conn.commit()
     conn.close()
     return redirect('/admin/menu')

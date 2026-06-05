@@ -12,19 +12,25 @@
 </head>
 <body>
     <h1>Edit Menu Item</h1>
+    <!-- Form submits to /admin/edit/<item_id> route -->
     <form method="POST">
+        <!-- Menu item name field - pre-filled with current value -->
         <label>Name:</label>
         <input type="text" name="name" value="{{ item[1] }}" required>
-        
+
+        <!-- Price for Small size (stored in øre) -->
         <label>Price (Small) in øre:</label>
         <input type="number" name="price_sm" value="{{ item[2] }}" required>
-        
+
+        <!-- Price for Regular size (stored in øre) -->
         <label>Price (Regular) in øre:</label>
         <input type="number" name="price_reg" value="{{ item[3] }}" required>
         
+         <!-- Price for Large size (stored in øre) -->
         <label>Price (Large) in øre:</label>
         <input type="number" name="price_lg" value="{{ item[4] }}" required>
         
+        <!-- Category dropdown - pre-selects current category -->
         <label>Category:</label>
         <select name="category">
             <option {% if item[5] == 'Fresh Fruit Juices' %}selected{% endif %}>Fresh Fruit Juices</option>
@@ -32,12 +38,16 @@
             <option {% if item[5] == 'Smoothies & Shakes' %}selected{% endif %}>Smoothies & Shakes</option>
         </select>
         
+        <!-- Category dropdown - pre-selects current category -->
         <label>
             <input type="checkbox" name="is_vegan" {% if item[6] %}checked{% endif %}> Vegan
         </label>
         
+        <!-- Submit button to update the menu item -->
         <button type="submit">Update Item</button>
     </form>
+
+    <!-- Link to go back to admin menu list -->
     <a href="/admin">Back to Admin</a>
 </body>
 </html>

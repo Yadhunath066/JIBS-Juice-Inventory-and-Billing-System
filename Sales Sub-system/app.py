@@ -7,28 +7,46 @@ Connects to Monika's menu API with fallback to hardcoded menu.
 
 from flask import Flask, render_template, request, session, redirect, url_for, jsonify
 from datetime import datetime
-import sqlite3
+import mysql.connector
 import requests
 
 app = Flask(__name__, template_folder='.')
 app.secret_key = 'jibs-secret-key-2026'
 
-# ============ DATABASE SETUP ============
+# ============ DATABASE SETUP (MySQL) ============
 
 def get_db():
-    return sqlite3.connect('jibs.db')
+    return mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="",
+        database="jibs_db"
+    )
 
 def init_db():
     conn = get_db()
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS tblSale (
-            SaleID INTEGER PRIMARY KEY AUTOINCREMENT,
+            SaleID INT PRIMARY KEY AUTO_INCREMENT,
             SaleDate DATETIME DEFAULT CURRENT_TIMESTAMP,
-            TotalAmount INTEGER NOT NULL,
-            PaymentMethod TEXT,
-            StaffID INTEGER,
-            ItemCount INTEGER NOT NULL
+            TotalAmount INT NOT NULL,
+            PaymentMethod VARCHAR(10) NOT NULL,
+            StaffID INT,
+            ItemCount INT NOT NULL,
+            IsProcessed TINYINT DEFAULT 1
+        )
+    ''')
+    # Also create tblSaleLine if needed
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS tblSaleLine (
+            SaleLineID INT PRIMARY KEY AUTO_INCREMENT,
+            SaleID INT,
+            ItemID INT,
+            ItemName VARCHAR(100),
+            Quantity INT,
+            LinePrice INT,
+            FOREIGN KEY (SaleID) REFERENCES tblSale(SaleID)
         )
     ''')
     conn.commit()
@@ -40,32 +58,29 @@ init_db()
 
 def get_all_orders():
     conn = get_db()
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT * FROM tblSale ORDER BY SaleDate DESC")
-    orders = [dict(row) for row in cursor.fetchall()]
+    orders = cursor.fetchall()
     conn.close()
     return orders
 
 def get_order_by_id(sale_id):
     conn = get_db()
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM tblSale WHERE SaleID = ?", (sale_id,))
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM tblSale WHERE SaleID = %s", (sale_id,))
     row = cursor.fetchone()
     conn.close()
-    return dict(row) if row else None
+    return row
 
 def get_orders_by_datetime(from_datetime, to_datetime):
     conn = get_db()
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
     cursor.execute("""
         SELECT * FROM tblSale 
-        WHERE SaleDate BETWEEN ? AND ?
+        WHERE SaleDate BETWEEN %s AND %s
         ORDER BY SaleDate DESC
     """, (from_datetime, to_datetime))
-    orders = [dict(row) for row in cursor.fetchall()]
+    orders = cursor.fetchall()
     conn.close()
     return orders
 
@@ -75,7 +90,7 @@ def save_order(total_amount, payment_method, staff_id, item_count):
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     cursor.execute('''
         INSERT INTO tblSale (SaleDate, TotalAmount, PaymentMethod, StaffID, ItemCount)
-        VALUES (?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s)
     ''', (now, total_amount, payment_method, staff_id, item_count))
     conn.commit()
     sale_id = cursor.lastrowid
@@ -162,14 +177,13 @@ def login():
             session['staff_name'] = 'Cashier'
             return redirect(url_for('main_menu'))
         else:
-            return render_template('s_login.html', error='  ⚠️ The username or password you entered is incorrect. Please try again later.')
+            return render_template('s_login.html', error='The username or password you entered is incorrect. Please try again later.')
     return render_template('s_login.html')
 
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('login'))
-
 
 #=========forgot password ==========
 @app.route('/forgot_password')
@@ -268,8 +282,8 @@ def update_quantity(cart_key):
         if cart_key in session['cart']:
             session['cart'][cart_key]['quantity'] = quantity
             session['cart'][cart_key]['line_total'] = session['cart'][cart_key]['price'] * quantity
-    session.modified = True
-    total = get_cart_total(session['cart'])
+            session.modified = True
+            total = get_cart_total(session['cart'])
     return jsonify({'success': True, 'total': total})
 
 # ============ REMOVE ITEM (AJAX) ============
@@ -308,23 +322,22 @@ def order_history():
     min_amount = request.args.get('min_amount')
     
     conn = get_db()
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
     
     if from_date and to_date:
         from_datetime = from_date.replace('T', ' ') + ':00'
         to_datetime = to_date.replace('T', ' ') + ':59'
-        cursor.execute("SELECT * FROM tblSale WHERE SaleDate BETWEEN ? AND ? ORDER BY SaleDate DESC", (from_datetime, to_datetime))
+        cursor.execute("SELECT * FROM tblSale WHERE SaleDate BETWEEN %s AND %s ORDER BY SaleDate DESC", (from_datetime, to_datetime))
     elif payment:
-        cursor.execute("SELECT * FROM tblSale WHERE PaymentMethod = ? ORDER BY SaleDate DESC", (payment,))
+        cursor.execute("SELECT * FROM tblSale WHERE PaymentMethod = %s ORDER BY SaleDate DESC", (payment,))
     elif search_date:
-        cursor.execute("SELECT * FROM tblSale WHERE DATE(SaleDate) = ? ORDER BY SaleDate DESC", (search_date,))
+        cursor.execute("SELECT * FROM tblSale WHERE DATE(SaleDate) = %s ORDER BY SaleDate DESC", (search_date,))
     elif min_amount:
-        cursor.execute("SELECT * FROM tblSale WHERE TotalAmount >= ? ORDER BY SaleDate DESC", (int(min_amount),))
+        cursor.execute("SELECT * FROM tblSale WHERE TotalAmount >= %s ORDER BY SaleDate DESC", (int(min_amount),))
     else:
         cursor.execute("SELECT * FROM tblSale ORDER BY SaleDate DESC")
     
-    orders = [dict(row) for row in cursor.fetchall()]
+    orders = cursor.fetchall()
     conn.close()
     
     return render_template('order_history.html', orders=orders, error=None)

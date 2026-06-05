@@ -1,0 +1,49 @@
+JIBS Sales Sub-system Test Results
+
+Date: 29 May 2026
+
+TotalAmount Tests
+
+0              PASS
+-1             PASS (Database accepts; application rejects)
+1              PASS
+2147483647     PASS
+NULL           PASS (Rejected)
+
+ItemCount Tests
+
+0              PASS
+-1             PASS (Database accepts; application rejects)
+1              PASS
+9999           PASS
+
+PaymentMethod Tests
+
+Card           PASS
+Cash           PASS
+Mobile         PASS
+Empty String   PASS (Database accepts; application rejects)
+Bitcoin        PASS (Database accepts; application rejects)
+NULL           PASS (Rejected)
+
+IsProcessed Tests
+
+Default Value  PASS
+0              PASS
+1              PASS
+
+SaleLine Tests
+
+Quantity
+
+0              PASS
+-1             PASS (Database accepts; application validation should reject)
+1              PASS
+9999           PASS
+
+LinePrice
+
+0              PASS
+-1             PASS (Database accepts; application validation should reject)
+1              PASS
+999999         PASS

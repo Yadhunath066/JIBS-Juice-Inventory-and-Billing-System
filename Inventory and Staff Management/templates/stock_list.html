@@ -1,0 +1,1075 @@
+{# ========================================
+   stock_list.html
+   Stock Management Page - JIBS Inventory System
+   Displays all ingredients with search, filter, and quick quantity adjustments
+   Features: Category filters, perishable filter, real-time search, stock health analytics
+   ======================================== #}
+
+{# Extend the base layout template #}
+{% extends "layout.html" %}
+
+{# Begin content block that will be inserted into layout #}
+{% block content %}
+
+{# Main container for stock management page #}
+<div class="stock-container">
+    
+    <!-- ========================================
+         ANALYTICS HEADER
+         Displays Total Stock Value and Restock Required counts
+         ======================================== -->
+    <div class="analytics-grid">
+        
+        <!-- Card 1: Total Stock Value -->
+        <div class="analytics-card glass-card">
+            <div class="analytics-icon">💰</div>
+            <div class="analytics-info">
+                <h3>Total Stock Value</h3>
+                <div class="analytics-value" id="totalStockValue">DKK 0</div>
+                <span class="analytics-trend positive">▲ Estimated value</span>
+            </div>
+        </div>
+        
+        <!-- Card 2: Restock Required (Low Stock Count) -->
+        <div class="analytics-card glass-card">
+            <div class="analytics-icon">⚠️</div>
+            <div class="analytics-info">
+                <h3>Restock Required</h3>
+                <div class="analytics-value" id="restockCount">0</div>
+                <span class="analytics-trend negative">Items below threshold</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================
+         SEARCH AND FILTERS SECTION
+         Search bar, category chips, and perishable filters
+         ======================================== -->
+    <div class="search-filters glass-card">
+        
+        <!-- Search Bar - Real-time ingredient search -->
+        <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search ingredients...">
+        </div>
+        
+        <!-- Category Filter Chips -->
+        <div class="category-chips" id="categoryChips">
+            <button class="chip active" data-category="all">All</button>
+            <button class="chip" data-category="Fruits">🍎 Fruits</button>
+            <button class="chip" data-category="Vegetables">🥬 Vegetables</button>
+            <button class="chip" data-category="Dairy">🥛 Dairy</button>
+            <button class="chip" data-category="Syrups">🍯 Syrups</button>
+            <button class="chip" data-category="Other">📦 Other</button>
+        </div>
+        
+        <!-- Perishable Filter Buttons -->
+        <div class="perishable-filter">
+            <button class="chip" id="filterPerishableYes">⚠️ Perishable Only</button>
+            <button class="chip" id="filterPerishableNo">📦 Non-Perishable Only</button>
+            <button class="chip" id="clearPerishableFilter">🔄 Clear Filter</button>
+        </div>
+    </div>
+
+    <!-- ========================================
+         ACTION BUTTONS
+         Add new ingredient and view low stock pages
+         ======================================== -->
+    <div class="action-bar">
+        <div class="button-group">
+            <button class="btn btn-primary" onclick="openAddModal()">➕ Add New Ingredient</button>
+            <a href="/low_stock" class="btn btn-outline">⚠️ View Low Stock</a>
+        </div>
+    </div>
+
+    <!-- ========================================
+         STOCK TABLE
+         Displays all ingredients with their details and actions
+         ======================================== -->
+    <div class="table-wrapper glass-card">
+        <table class="stock-table" id="stockTable">
+            <thead>
+                <tr>
+                    <th>Ingredient</th>
+                    <th>Category</th>
+                    <th>Quantity</th>
+                    <th>Unit</th>
+                    <th>Min Level</th>
+                    <th>Perishable</th>
+                    <th>Status</th>
+                    <th>Quick Adjust</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="stockTableBody">
+                {# Loop through all stock items from backend #}
+                {% for item in stock %}
+                <tr data-id="{{ item.StockID }}" 
+                    data-name="{{ item.IngredientName }}" 
+                    data-category="{{ item.Category|default('Other') }}" 
+                    data-quantity="{{ item.QuantityInStock }}" 
+                    data-min="{{ item.MinStockLevel }}" 
+                    data-unit="{{ item.UnitType }}" 
+                    data-perishable="{{ 'yes' if item.IsPerishable else 'no' }}">
+                    
+                    <!-- Ingredient Name -->
+                    <td class="item-name">{{ item.IngredientName }}</td>
+                    
+                    <!-- Category -->
+                    <td class="item-category">{{ item.Category|default('Other') }}</td>
+                    
+                    <!-- Quantity with stock level styling -->
+                    <td class="item-quantity {% if item.QuantityInStock < item.MinStockLevel %}low-stock{% else %}normal-stock{% endif %}">
+                        {{ item.QuantityInStock }}
+                    </td>
+                    
+                    <!-- Unit Type -->
+                    <td class="item-unit">{{ item.UnitType }}</td>
+                    
+                    <!-- Minimum Stock Level -->
+                    <td class="item-min">{{ item.MinStockLevel }}</td>
+                    
+                    <!-- Perishable Status (Yes/No) -->
+                    <td class="item-perishable">{{ 'Yes' if item.IsPerishable else 'No' }}</td>
+                    
+                    <!-- Status Badge - Calculated based on stock percentage -->
+                    <td class="item-status">
+                        {% set percentage = (item.QuantityInStock / item.MinStockLevel) * 100 if item.MinStockLevel > 0 else 0 %}
+                        {% if percentage < 20 %}
+                            <span class="status-pill critical">⚠️ Critical</span>
+                        {% elif percentage < 50 %}
+                            <span class="status-pill low">⚠️ Low Stock</span>
+                        {% else %}
+                            <span class="status-pill good">✓ In Stock</span>
+                        {% endif %}
+                    </td>
+                    
+                    <!-- Quick Adjust Quantity Controls -->
+                    <td class="quick-adjust">
+                        <div class="quantity-controls">
+                            <button class="qty-btn minus" onclick="adjustQuantity({{ item.StockID }}, -1, this)">-</button>
+                            <span class="current-qty" id="qty-{{ item.StockID }}">{{ item.QuantityInStock }}</span>
+                            <button class="qty-btn plus" onclick="adjustQuantity({{ item.StockID }}, 1, this)">+</button>
+                        </div>
+                    </td>
+                    
+                    <!-- Action Buttons - Edit and Delete -->
+                    <td class="action-buttons">
+                        <button class="action-btn edit" onclick="openEditModal({{ item.StockID }})" title="Edit">
+                            ✏️
+                        </button>
+                        <button class="action-btn delete" onclick="deleteStock({{ item.StockID }})" title="Delete">
+                            🗑️
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ========================================
+     ADD/EDIT MODAL
+     Modal form for adding new or editing existing ingredients
+     ======================================== -->
+<div id="stockModal" class="modal">
+    <div class="modal-content glass-card">
+        <div class="modal-header">
+            <h2 id="modalTitle">Add New Ingredient</h2>
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        
+        <!-- Modal Form - Dynamic action based on add/edit mode -->
+        <form id="stockForm" method="POST">
+            <input type="hidden" id="stockId" name="stock_id">
+            
+            <!-- Ingredient Name Field -->
+            <div class="form-group floating-group">
+                <input type="text" id="ingredientName" name="name" required placeholder=" ">
+                <label>Ingredient Name</label>
+            </div>
+            
+            <!-- Category Field -->
+            <div class="form-group floating-group">
+                <input type="text" id="category" name="category" value="Other" placeholder=" ">
+                <label>Category (Fruits, Vegetables, Dairy, Syrups, Other)</label>
+            </div>
+            
+            <!-- Quantity and Unit Row (2 columns) -->
+            <div class="form-row">
+                <div class="form-group floating-group">
+                    <input type="number" id="quantity" name="quantity" value="0" required placeholder=" ">
+                    <label>Quantity</label>
+                </div>
+                <div class="form-group floating-group">
+                    <input type="text" id="unit" name="unit" required placeholder=" ">
+                    <label>Unit (kg, L, pcs)</label>
+                </div>
+            </div>
+            
+            <!-- Minimum Stock Level Field -->
+            <div class="form-group floating-group">
+                <input type="number" id="minLevel" name="min_level" value="5" required placeholder=" ">
+                <label>Minimum Stock Level (Alert Threshold)</label>
+            </div>
+            
+            <!-- Perishable Checkbox -->
+            <div class="form-group checkbox-group">
+                <input type="checkbox" id="perishable" name="perishable" value="1">
+                <label>Perishable?</label>
+            </div>
+            
+            <!-- Modal Action Buttons -->
+            <div class="modal-buttons">
+                <button type="submit" class="btn btn-primary">Save Ingredient</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# ========================================
+   CUSTOM CSS STYLES
+   ======================================== #}
+<style>
+    /* Main container animation and layout */
+    .stock-container {
+        animation: fadeInUp 0.4s ease;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    /* Analytics Cards Grid - 2 column responsive */
+    .analytics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+    }
+
+    /* Individual Analytics Card */
+    .analytics-card {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 24px;
+        border-radius: 24px;
+        background: rgba(15, 26, 22, 0.6);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: all 0.3s ease;
+    }
+
+    /* Analytics Card Hover Effect */
+    .analytics-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(34, 197, 94, 0.3);
+    }
+
+    /* Analytics Icon Size */
+    .analytics-icon {
+        font-size: 48px;
+    }
+
+    /* Analytics Text Styles */
+    .analytics-info h3 {
+        font-size: 14px;
+        font-weight: 500;
+        color: #94a3b8;
+        margin-bottom: 8px;
+    }
+
+    .analytics-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #f8fafc;
+        margin-bottom: 5px;
+    }
+
+    .analytics-trend {
+        font-size: 12px;
+    }
+
+    .analytics-trend.positive { color: #22c55e; }
+    .analytics-trend.negative { color: #e74c3c; }
+
+    /* ========================================
+       Search and Filters Bar
+       ======================================== */
+    .search-filters {
+        padding: 20px 24px;
+        border-radius: 20px;
+        background: rgba(15, 26, 22, 0.6);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    /* Search Bar Input */
+    .search-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 40px;
+        padding: 8px 20px;
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .search-bar i {
+        color: #94a3b8;
+        font-size: 16px;
+    }
+
+    .search-bar input {
+        background: transparent;
+        border: none;
+        color: #f8fafc;
+        font-size: 14px;
+        width: 100%;
+        outline: none;
+    }
+
+    .search-bar input::placeholder {
+        color: #94a3b8;
+    }
+
+    /* Filter Chips Container */
+    .category-chips, .perishable-filter {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    /* Individual Filter Chip */
+    .chip {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 30px;
+        padding: 6px 16px;
+        color: #94a3b8;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    /* Active Chip - Green Background */
+    .chip.active {
+        background: #22c55e;
+        color: white;
+        border-color: #22c55e;
+    }
+
+    /* Chip Hover Effect */
+    .chip:hover:not(.active) {
+        border-color: #22c55e;
+        color: #22c55e;
+    }
+
+    /* ========================================
+       Action Bar
+       ======================================== */
+    .action-bar {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    /* ========================================
+       Button Styles
+       ======================================== */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-size: 14px;
+        cursor: pointer;
+        border: none;
+    }
+
+    /* Primary Button - Solid Green */
+    .btn-primary {
+        background: #22c55e;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #16a34a;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);
+    }
+
+    /* Outline Button - Transparent with Border */
+    .btn-outline {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #f8fafc;
+    }
+
+    .btn-outline:hover {
+        border-color: #22c55e;
+        background: rgba(34, 197, 94, 0.1);
+        transform: translateY(-2px);
+    }
+
+    /* Secondary Button */
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #f8fafc;
+    }
+
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* ========================================
+       Stock Table Styles
+       ======================================== */
+    .table-wrapper {
+        background: rgba(15, 26, 22, 0.6);
+        backdrop-filter: blur(12px);
+        border-radius: 20px;
+        overflow-x: auto;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .stock-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    /* Table Header */
+    .stock-table th {
+        background: rgba(34, 197, 94, 0.1);
+        padding: 14px 16px;
+        text-align: left;
+        font-weight: 600;
+        color: #f8fafc;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Table Cells */
+    .stock-table td {
+        padding: 12px 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        color: #94a3b8;
+        transition: background 0.2s ease;
+    }
+
+    /* Row Hover Effect */
+    .stock-table tr:hover td {
+        background: rgba(34, 197, 94, 0.05);
+    }
+
+    /* Flash Animation for Row Update */
+    .row-flash {
+        animation: rowFlash 0.5s ease;
+    }
+
+    @keyframes rowFlash {
+        0%, 100% { background: transparent; }
+        50% { background: rgba(34, 197, 94, 0.2); }
+    }
+
+    /* Stock Level Colors */
+    .item-name {
+        font-weight: 600;
+        color: #f8fafc;
+    }
+
+    .low-stock {
+        color: #e74c3c;
+        font-weight: bold;
+    }
+
+    .normal-stock {
+        color: #22c55e;
+    }
+
+    /* ========================================
+       Status Pills
+       ======================================== */
+    .status-pill {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .status-pill.good {
+        background: rgba(34, 197, 94, 0.15);
+        color: #22c55e;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .status-pill.low {
+        background: rgba(243, 156, 18, 0.15);
+        color: #f39c12;
+        border: 1px solid rgba(243, 156, 18, 0.3);
+    }
+
+    .status-pill.critical {
+        background: rgba(231, 76, 60, 0.15);
+        color: #e74c3c;
+        border: 1px solid rgba(231, 76, 60, 0.3);
+        animation: pulse 1s infinite;
+    }
+
+    /* Pulse Animation for Critical Stock */
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+
+    /* ========================================
+       Quick Quantity Controls
+       ======================================== */
+    .quantity-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .qty-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #f8fafc;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .qty-btn:hover {
+        background: #22c55e;
+        border-color: #22c55e;
+    }
+
+    .current-qty {
+        min-width: 35px;
+        text-align: center;
+        font-weight: 600;
+        color: #f8fafc;
+    }
+
+    /* ========================================
+       Action Buttons (Edit/Delete)
+       ======================================== */
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 6px 10px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        font-size: 16px;
+    }
+
+    .action-btn.edit {
+        color: #3498db;
+    }
+
+    .action-btn.edit:hover {
+        background: rgba(52, 152, 219, 0.2);
+    }
+
+    .action-btn.delete {
+        color: #e74c3c;
+    }
+
+    .action-btn.delete:hover {
+        background: rgba(231, 76, 60, 0.2);
+    }
+
+    /* ========================================
+       Modal Styles
+       ======================================== */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(8px);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal.show {
+        display: flex;
+    }
+
+    .modal-content {
+        width: 90%;
+        max-width: 500px;
+        padding: 30px;
+        border-radius: 24px;
+        animation: modalDrop 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
+    }
+
+    /* Modal Drop Animation */
+    @keyframes modalDrop {
+        from {
+            opacity: 0;
+            transform: translateY(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .modal-header h2 {
+        font-size: 24px;
+        color: #f8fafc;
+    }
+
+    .modal-close {
+        background: transparent;
+        border: none;
+        font-size: 28px;
+        color: #94a3b8;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .modal-close:hover {
+        color: #e74c3c;
+    }
+
+    /* ========================================
+       Form Styles
+       ======================================== */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    /* Floating Label Container */
+    .floating-group {
+        position: relative;
+    }
+
+    /* Floating Label Input */
+    .floating-group input {
+        width: 100%;
+        padding: 16px 12px 8px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        font-size: 15px;
+        color: #f8fafc;
+        outline: none;
+    }
+
+    .floating-group input:focus {
+        border-color: #22c55e;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+    }
+
+    /* Floating Label - Moves up when input has content */
+    .floating-group label {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 14px;
+        color: #94a3b8;
+        transition: all 0.2s ease;
+        pointer-events: none;
+    }
+
+    .floating-group input:focus + label,
+    .floating-group input:not(:placeholder-shown) + label {
+        top: 8px;
+        transform: translateY(0);
+        font-size: 10px;
+        color: #22c55e;
+    }
+
+    /* Two Column Form Row */
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    /* Checkbox Group */
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .checkbox-group input {
+        width: auto;
+    }
+
+    .checkbox-group label {
+        margin-bottom: 0;
+        cursor: pointer;
+    }
+
+    .modal-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 25px;
+    }
+
+    /* No Results Message */
+    .no-results {
+        text-align: center;
+        padding: 40px;
+        color: #94a3b8;
+        font-size: 16px;
+    }
+
+    /* ========================================
+       Responsive Design Breakpoints
+       ======================================== */
+    @media (max-width: 768px) {
+        .search-filters {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .stock-table th,
+        .stock-table td {
+            padding: 10px 12px;
+            font-size: 13px;
+        }
+        
+        .quantity-controls {
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+</style>
+
+{# ========================================
+   JAVASCRIPT FOR STOCK MANAGEMENT
+   ======================================== #}
+<script>
+    // Global variables for filtering
+    let perishableFilter = null;      // 'yes', 'no', or null
+    let currentSearchTerm = '';       // Current search term for filtering
+    
+    /**
+     * Filter Table - Main filtering function
+     * Filters rows based on search term, category, and perishable status
+     * Shows/hides rows and displays "no results" message when needed
+     */
+    function filterTable() {
+        const searchValue = document.getElementById('searchInput').value.toLowerCase();
+        currentSearchTerm = searchValue;
+        const activeCategory = document.querySelector('.chip.active').getAttribute('data-category');
+        const rows = document.querySelectorAll('#stockTableBody tr');
+        let visibleCount = 0;
+        
+        // Remove existing no results message
+        const existingMsg = document.getElementById('noResultsMsg');
+        if (existingMsg) existingMsg.remove();
+        
+        rows.forEach(row => {
+            // Skip if row has no data
+            if (!row.getAttribute('data-name')) return;
+            
+            const name = row.getAttribute('data-name').toLowerCase();
+            const category = row.getAttribute('data-category');
+            const perishable = row.getAttribute('data-perishable');
+            
+            // Check search match (only if search term exists)
+            let matchesSearch = true;
+            if (searchValue !== '') {
+                matchesSearch = name.includes(searchValue);
+            }
+            
+            // Check category filter
+            const matchesCategory = (activeCategory === 'all') || (category === activeCategory);
+            
+            // Check perishable filter
+            const matchesPerishable = (perishableFilter === null) || (perishable === perishableFilter);
+            
+            // Apply filters
+            if (matchesSearch && matchesCategory && matchesPerishable) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Show "No Results" message only when actively filtering and no results
+        const isFiltering = (searchValue !== '' || perishableFilter !== null || activeCategory !== 'all');
+        
+        if (visibleCount === 0 && isFiltering) {
+            const tbody = document.getElementById('stockTableBody');
+            const msgRow = document.createElement('tr');
+            msgRow.id = 'noResultsMsg';
+            msgRow.innerHTML = '<td colspan="9" class="no-results">❌ Oops! No matching ingredients found. Please try a different search.</td>';
+            tbody.appendChild(msgRow);
+        }
+        
+        updateAnalytics();
+    }
+    
+    /**
+     * Search Perishable Function
+     * Filters items based on search term 'perishable' or 'non-perishable'
+     */
+    function searchPerishable() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        
+        if (searchTerm === 'perishable' || searchTerm === 'yes') {
+            perishableFilter = 'yes';
+            document.getElementById('filterPerishableYes').classList.add('active');
+            document.getElementById('filterPerishableNo').classList.remove('active');
+            filterTable();
+        } else if (searchTerm === 'non-perishable' || searchTerm === 'no') {
+            perishableFilter = 'no';
+            document.getElementById('filterPerishableNo').classList.add('active');
+            document.getElementById('filterPerishableYes').classList.remove('active');
+            filterTable();
+        } else if (searchTerm === '') {
+            alert('❌ Oops! Please type "perishable" or "non-perishable" in the search box first.');
+        } else {
+            alert('❌ Oops! Please type "perishable" for perishable items or "non-perishable" for non-perishable items.');
+        }
+    }
+    
+    /**
+     * Clear Perishable Filter
+     * Resets all filters and shows all items
+     */
+    function clearPerishableFilter() {
+        perishableFilter = null;
+        document.getElementById('filterPerishableYes').classList.remove('active');
+        document.getElementById('filterPerishableNo').classList.remove('active');
+        document.getElementById('searchInput').value = '';
+        filterTable();
+    }
+    
+    /**
+     * Update Analytics - Recalculates total stock value and restock count
+     */
+    function updateAnalytics() {
+        const rows = document.querySelectorAll('#stockTableBody tr');
+        let totalValue = 0;
+        let restockCount = 0;
+        
+        rows.forEach(row => {
+            if (row.id !== 'noResultsMsg' && row.style.display !== 'none' && row.getAttribute('data-quantity')) {
+                const quantity = parseInt(row.getAttribute('data-quantity'));
+                const minLevel = parseInt(row.getAttribute('data-min'));
+                if (!isNaN(quantity) && !isNaN(minLevel)) {
+                    totalValue += quantity * 10;  // Assume each unit costs 10 DKK
+                    if (quantity < minLevel) restockCount++;
+                }
+            }
+        });
+        
+        document.getElementById('totalStockValue').innerHTML = `DKK ${totalValue.toLocaleString()}`;
+        document.getElementById('restockCount').innerHTML = restockCount;
+    }
+    
+    /**
+     * Adjust Quantity - AJAX call to update stock
+     * @param {number} stockId - ID of stock item
+     * @param {number} change - Amount to change (+1 or -1)
+     * @param {HTMLElement} button - Button element that was clicked
+     */
+    function adjustQuantity(stockId, change, button) {
+        const row = button.closest('tr');
+        const quantitySpan = document.getElementById(`qty-${stockId}`);
+        let currentQty = parseInt(quantitySpan.innerText);
+        let newQty = currentQty + change;
+        if (newQty < 0) newQty = 0;
+        
+        fetch(`/stock/quick-update/${stockId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ quantity: newQty })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                quantitySpan.innerText = newQty;
+                row.setAttribute('data-quantity', newQty);
+                const quantityCell = row.querySelector('.item-quantity');
+                quantityCell.innerText = newQty;
+                
+                // Update stock level styling
+                const minLevel = parseInt(row.getAttribute('data-min'));
+                if (newQty < minLevel) {
+                    quantityCell.classList.add('low-stock');
+                    quantityCell.classList.remove('normal-stock');
+                } else {
+                    quantityCell.classList.add('normal-stock');
+                    quantityCell.classList.remove('low-stock');
+                }
+                
+                // Update status pill
+                const percentage = (newQty / minLevel) * 100;
+                const statusCell = row.querySelector('.item-status');
+                let statusHtml = '';
+                if (percentage < 20) statusHtml = '<span class="status-pill critical">⚠️ Critical</span>';
+                else if (percentage < 50) statusHtml = '<span class="status-pill low">⚠️ Low Stock</span>';
+                else statusHtml = '<span class="status-pill good">✓ In Stock</span>';
+                statusCell.innerHTML = statusHtml;
+                
+                // Flash animation on row
+                row.classList.add('row-flash');
+                setTimeout(() => row.classList.remove('row-flash'), 500);
+                updateAnalytics();
+            }
+        });
+    }
+    
+    /**
+     * Open Add Modal - Shows modal for adding new ingredient
+     */
+    function openAddModal() {
+        document.getElementById('modalTitle').innerText = 'Add New Ingredient';
+        document.getElementById('stockForm').reset();
+        document.getElementById('stockId').value = '';
+        document.getElementById('stockForm').action = '/stock/add';
+        document.getElementById('stockModal').classList.add('show');
+    }
+    
+    /**
+     * Open Edit Modal - Fetches ingredient data and shows modal for editing
+     * @param {number} stockId - ID of stock item to edit
+     */
+    function openEditModal(stockId) {
+        fetch(`/stock/get/${stockId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('modalTitle').innerText = 'Edit Ingredient';
+                document.getElementById('stockId').value = data.StockID;
+                document.getElementById('ingredientName').value = data.IngredientName;
+                document.getElementById('category').value = data.Category || 'Other';
+                document.getElementById('quantity').value = data.QuantityInStock;
+                document.getElementById('unit').value = data.UnitType;
+                document.getElementById('minLevel').value = data.MinStockLevel;
+                document.getElementById('perishable').checked = data.IsPerishable === 1;
+                document.getElementById('stockForm').action = `/stock/edit/${stockId}`;
+                document.getElementById('stockModal').classList.add('show');
+            });
+    }
+    
+    /**
+     * Close Modal - Hides the add/edit modal
+     */
+    function closeModal() {
+        document.getElementById('stockModal').classList.remove('show');
+    }
+    
+    /**
+     * Delete Stock - Redirects to delete endpoint after confirmation
+     * @param {number} stockId - ID of stock item to delete
+     */
+    function deleteStock(stockId) {
+        if (confirm('Are you sure you want to delete this ingredient?')) {
+            window.location.href = `/stock/delete/${stockId}`;
+        }
+    }
+    
+    // ========================================
+    // EVENT LISTENERS
+    // ========================================
+    
+    // Search input - real-time filtering
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        filterTable();
+    });
+    
+    // Category chip click handlers
+    document.querySelectorAll('.category-chips .chip').forEach(chip => {
+        chip.addEventListener('click', function() {
+            document.querySelectorAll('.category-chips .chip').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            filterTable();
+        });
+    });
+    
+    // Perishable filter buttons
+    document.getElementById('filterPerishableYes').addEventListener('click', function() {
+        perishableFilter = 'yes';
+        this.classList.add('active');
+        document.getElementById('filterPerishableNo').classList.remove('active');
+        filterTable();
+    });
+    
+    document.getElementById('filterPerishableNo').addEventListener('click', function() {
+        perishableFilter = 'no';
+        this.classList.add('active');
+        document.getElementById('filterPerishableYes').classList.remove('active');
+        filterTable();
+    });
+    
+    // Clear perishable filter button
+    document.getElementById('clearPerishableFilter').addEventListener('click', function() {
+        clearPerishableFilter();
+    });
+    
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('stockModal');
+        if (event.target === modal) closeModal();
+    }
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateAnalytics();
+        // Initialize floating labels for inputs with existing values
+        document.querySelectorAll('.floating-group input').forEach(input => {
+            if (input.value) input.setAttribute('placeholder', ' ');
+        });
+    });
+</script>
+
+{# End content block #}
+{% endblock %}

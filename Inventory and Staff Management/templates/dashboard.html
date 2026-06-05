@@ -1,0 +1,770 @@
+{# ========================================
+   dashboard.html
+   Main Dashboard Page - JIBS Inventory System
+   Displays statistics, stock health, activity feed, and sales graph
+   ======================================== #}
+
+{# Extend the base layout template #}
+{% extends "layout.html" %}
+
+{# Begin content block that will be inserted into layout #}
+{% block content %}
+
+{# Main dashboard container #}
+<div class="dashboard-container">
+    
+    <!-- ========================================
+         Hero Stats Row - 4 Cards
+         Shows key metrics: Staff count, Ingredients, Low Stock, Daily Orders
+         ======================================== -->
+    <div class="stats-grid">
+        
+        <!-- Card 1: Total Staff Members -->
+        <div class="stat-card staff" data-delay="0">
+            <div class="stat-icon">
+                {# Staff icon GIF - hides if image fails to load #}
+                <img src="/static/images/stafficon.gif" alt="Staff Icon" onerror="this.style.display='none'">
+            </div>
+            <h3>Active Staff Members</h3>
+            <div class="stat-number">
+                {# Counter animation element - starts at 0, animates to target #}
+                <span class="counter" data-target="{{ staff_count }}">0</span>
+            </div>
+            <div class="stat-trend neutral">
+                <span class="trend-icon">●</span> +2 this month
+            </div>
+        </div>
+
+        <!-- Card 2: Total Ingredients in Stock -->
+        <div class="stat-card stock" data-delay="1">
+            <div class="stat-icon">
+                <img src="/static/images/ingredientsicon.gif" alt="Ingredients Icon" onerror="this.style.display='none'">
+            </div>
+            <h3>Total Ingredients</h3>
+            <div class="stat-number">
+                <span class="counter" data-target="{{ stock_count }}">0</span>
+            </div>
+            <div class="stat-trend positive">
+                <span class="trend-icon">▲</span> +5 this week
+            </div>
+        </div>
+
+        <!-- Card 3: Low Stock Alerts -->
+        <div class="stat-card lowstock" data-delay="2">
+            <div class="stat-icon">
+                <img src="/static/images/lowstockicon.gif" alt="Low Stock Icon" onerror="this.style.display='none'">
+            </div>
+            <h3>Low Stock Items</h3>
+            <div class="stat-number alert-count">
+                <span class="counter" data-target="{{ low_stock_count }}">0</span>
+            </div>
+            <div class="stat-trend negative">
+                <span class="trend-icon">▼</span> needs attention
+            </div>
+        </div>
+
+        <!-- Card 4: Daily Orders (New Feature) -->
+        <div class="stat-card orders" data-delay="3">
+            <div class="stat-icon">📋</div>
+            <h3>Daily Orders</h3>
+            <div class="stat-number">
+                <span class="counter" data-target="24">0</span>
+            </div>
+            <div class="stat-trend positive">
+                <span class="trend-icon">▲</span> +12% vs yesterday
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================
+         Middle Section: Stock Health Grid + Activity Feed
+         Two-column layout - Left: Stock health visualization, Right: Recent activities
+         ======================================== -->
+    <div class="middle-section">
+        
+        <!-- Left Side: Stock Health Grid with circular progress bars -->
+        <div class="stock-health-section glass-card">
+            <div class="section-header">
+                <h2>📦 Stock Health</h2>
+                <a href="/stock" class="view-link">View All →</a>
+            </div>
+            {# Dynamic stock grid - populated by JavaScript #}
+            <div class="stock-grid" id="stockGrid">
+                <div class="loading-placeholder">Loading stock data...</div>
+            </div>
+        </div>
+
+        <!-- Right Side: Activity Feed Timeline -->
+        <div class="activity-feed glass-card">
+            <div class="section-header">
+                <h2>📋 Recent Activity</h2>
+                <span class="time-label">Last 24 hours</span>
+            </div>
+            <div class="timeline" id="activityFeed">
+                {# Static timeline items - can be made dynamic later #}
+                <div class="timeline-item">
+                    <div class="timeline-icon staff">👤</div>
+                    <div class="timeline-content">
+                        <p><strong>Yadhunath</strong> logged in</p>
+                        <span class="timeline-time">2 minutes ago</span>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon stock">📦</div>
+                    <div class="timeline-content">
+                        <p>Stock updated: <strong>Apples</strong> - 50 units</p>
+                        <span class="timeline-time">1 hour ago</span>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon order">🛒</div>
+                    <div class="timeline-content">
+                        <p>New order <strong>#1042</strong> completed</p>
+                        <span class="timeline-time">2 hours ago</span>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon recipe">🍽️</div>
+                    <div class="timeline-content">
+                        <p>New recipe created: <strong>Green Glow</strong></p>
+                        <span class="timeline-time">3 hours ago</span>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon staff">👤</div>
+                    <div class="timeline-content">
+                        <p>New staff added: <strong>Monika Gurung</strong> (Cashier)</p>
+                        <span class="timeline-time">5 hours ago</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================
+         Bottom Section: Sales Graph
+         Placeholder for sales data visualization
+         ======================================== -->
+    <div class="sales-graph-section glass-card">
+        <div class="section-header">
+            <h2>📊 Sales Overview (Last 7 Days)</h2>
+            <div class="graph-controls">
+                <button class="graph-btn active">Week</button>
+                <button class="graph-btn">Month</button>
+                <button class="graph-btn">Year</button>
+            </div>
+        </div>
+        <div class="graph-placeholder">
+            {# SVG Line graph for sales trend visualization #}
+            <svg viewBox="0 0 800 200" preserveAspectRatio="none">
+                <!-- Line path for sales trend -->
+                <polyline points="50,180 150,140 250,160 350,100 450,120 550,60 650,80 750,40" 
+                          stroke="#22c55e" stroke-width="3" fill="none" stroke-linecap="round"/>
+                <!-- Filled area under the line -->
+                <polygon points="50,180 150,140 250,160 350,100 450,120 550,60 650,80 750,40 750,200 50,200" 
+                         fill="url(#gradient)" opacity="0.3"/>
+                <!-- Gradient definition for area fill -->
+                <defs>
+                    <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style="stop-color:#22c55e;stop-opacity:0.5"/>
+                        <stop offset="100%" style="stop-color:#22c55e;stop-opacity:0"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+            {# X-axis labels for days of the week #}
+            <div class="graph-labels">
+                <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ========================================
+   Custom CSS Styles for Dashboard
+   ======================================== #}
+<style>
+    /* Dashboard Container - fade in animation */
+    .dashboard-container {
+        animation: fadeInUp 0.4s ease;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    /* Hero Stats Grid - 4 column responsive grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 24px;
+    }
+
+    /* Individual Stat Card - Glass morphism style */
+    .stat-card {
+        background: rgba(15, 26, 22, 0.6);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 22px 24px;
+        text-align: center;
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.4s ease backwards;
+    }
+
+    /* Staggered animation delays for each card */
+    .stat-card:nth-child(1) { animation-delay: 0.05s; }
+    .stat-card:nth-child(2) { animation-delay: 0.1s; }
+    .stat-card:nth-child(3) { animation-delay: 0.15s; }
+    .stat-card:nth-child(4) { animation-delay: 0.2s; }
+
+    /* Card hover effect - lift and green glow */
+    .stat-card:hover {
+        transform: translateY(-5px);
+        border-color: #22c55e;
+        box-shadow: 0 0 20px rgba(34, 197, 94, 0.1);
+    }
+
+    /* Stat icon image styling */
+    .stat-icon img {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 15px;
+    }
+
+    /* Fallback stat icon styling */
+    .stat-icon {
+        font-size: 48px;
+        margin-bottom: 10px;
+    }
+
+    /* Stat card heading */
+    .stat-card h3 {
+        color: #94a3b8;
+        font-size: 14px;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+
+    /* Stat number - large bold text */
+    .stat-number {
+        font-size: 42px;
+        font-weight: bold;
+        margin-bottom: 8px;
+    }
+
+    /* Color variations for different stat types */
+    .stat-card.staff .stat-number { color: #3498db; }      /* Blue for staff */
+    .stat-card.stock .stat-number { color: #22c55e; }      /* Green for stock */
+    .stat-card.lowstock .stat-number { color: #e74c3c; }   /* Red for low stock */
+    .stat-card.orders .stat-number { color: #f39c12; }     /* Orange for orders */
+
+    /* Trend indicator styling */
+    .stat-trend {
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    .stat-trend.positive { color: #22c55e; }  /* Green for positive trends */
+    .stat-trend.negative { color: #e74c3c; }  /* Red for negative trends */
+    .stat-trend.neutral { color: #94a3b8; }   /* Gray for neutral trends */
+
+    /* Trend icon size */
+    .trend-icon {
+        font-size: 10px;
+    }
+
+    /* Middle Section - Two column layout */
+    .middle-section {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+    }
+
+    /* Glass Card - Reusable frosted glass component */
+    .glass-card {
+        background: rgba(15, 26, 22, 0.6);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+    }
+
+    /* Stock health section and activity feed padding */
+    .stock-health-section, .activity-feed {
+        padding: 24px;
+    }
+
+    /* Section header - flex between title and link */
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .section-header h2 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #f8fafc;
+    }
+
+    /* View all link styling */
+    .view-link {
+        color: #22c55e;
+        text-decoration: none;
+        font-size: 13px;
+        transition: color 0.2s;
+    }
+
+    .view-link:hover {
+        color: #16a34a;
+        text-decoration: underline;
+    }
+
+    /* Time label for activity feed */
+    .time-label {
+        font-size: 12px;
+        color: #94a3b8;
+    }
+
+    /* Stock Grid - Responsive card grid */
+    .stock-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 16px;
+        max-height: 350px;
+        overflow-y: auto;
+        padding-right: 8px;
+    }
+
+    /* Custom scrollbar for stock grid */
+    .stock-grid::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .stock-grid::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+    }
+
+    .stock-grid::-webkit-scrollbar-thumb {
+        background: #22c55e;
+        border-radius: 10px;
+    }
+
+    /* Individual stock item card */
+    .stock-item {
+        background: rgba(15, 26, 22, 0.4);
+        border-radius: 16px;
+        padding: 16px;
+        text-align: center;
+        transition: all 0.2s ease;
+    }
+
+    .stock-item:hover {
+        background: rgba(34, 197, 94, 0.1);
+        transform: translateY(-2px);
+    }
+
+    /* Stock name styling */
+    .stock-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #f8fafc;
+        margin-bottom: 12px;
+    }
+
+    /* Circular progress bar container */
+    .stock-circle {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 12px;
+    }
+
+    canvas.stock-canvas {
+        width: 100%;
+        height: 100%;
+    }
+
+    /* Percentage text inside circle */
+    .stock-percentage {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    /* Stock quantity text */
+    .stock-quantity {
+        font-size: 12px;
+        color: #94a3b8;
+        margin-bottom: 8px;
+    }
+
+    /* Status badge styling */
+    .stock-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 600;
+    }
+
+    .badge-warning {
+        background: rgba(243, 156, 18, 0.2);
+        color: #f39c12;
+    }
+
+    .badge-danger {
+        background: rgba(231, 76, 60, 0.2);
+        color: #e74c3c;
+        animation: pulse 1s infinite;  /* Pulsing animation for critical items */
+    }
+
+    /* Pulse animation for critical stock */
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+    }
+
+    .badge-success {
+        background: rgba(34, 197, 94, 0.2);
+        color: #22c55e;
+    }
+
+    /* Activity Feed Timeline */
+    .timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        max-height: 350px;
+        overflow-y: auto;
+        padding-right: 8px;
+    }
+
+    /* Timeline item container */
+    .timeline-item {
+        display: flex;
+        gap: 14px;
+        position: relative;
+    }
+
+    /* Vertical connecting line between timeline items */
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: 20px;
+        top: 35px;
+        bottom: -20px;
+        width: 2px;
+        background: linear-gradient(180deg, rgba(34, 197, 94, 0.3), transparent);
+    }
+
+    /* Hide line for last item */
+    .timeline-item:last-child::before {
+        display: none;
+    }
+
+    /* Timeline icon - circular background */
+    .timeline-icon {
+        width: 40px;
+        height: 40px;
+        background: rgba(34, 197, 94, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    /* Color variations for different activity types */
+    .timeline-icon.staff { background: rgba(52, 152, 219, 0.1); }
+    .timeline-icon.stock { background: rgba(34, 197, 94, 0.1); }
+    .timeline-icon.order { background: rgba(243, 156, 18, 0.1); }
+    .timeline-icon.recipe { background: rgba(155, 89, 182, 0.1); }
+
+    /* Timeline content area */
+    .timeline-content {
+        flex: 1;
+    }
+
+    .timeline-content p {
+        color: #f8fafc;
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+
+    /* Highlighted text in timeline */
+    .timeline-content strong {
+        color: #22c55e;
+    }
+
+    /* Timestamp styling */
+    .timeline-time {
+        font-size: 11px;
+        color: #94a3b8;
+    }
+
+    /* Sales Graph Section */
+    .sales-graph-section {
+        padding: 24px;
+    }
+
+    /* Graph period selector buttons */
+    .graph-controls {
+        display: flex;
+        gap: 8px;
+    }
+
+    .graph-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #94a3b8;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    /* Active button state */
+    .graph-btn.active {
+        background: #22c55e;
+        color: white;
+        border-color: #22c55e;
+    }
+
+    .graph-btn:hover {
+        background: rgba(34, 197, 94, 0.2);
+        color: #22c55e;
+    }
+
+    /* Graph container */
+    .graph-placeholder {
+        margin-top: 20px;
+    }
+
+    .graph-placeholder svg {
+        width: 100%;
+        height: 160px;
+    }
+
+    /* X-axis labels */
+    .graph-labels {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 12px;
+        padding: 0 20px;
+    }
+
+    .graph-labels span {
+        font-size: 11px;
+        color: #94a3b8;
+    }
+
+    /* Loading placeholder styling */
+    .loading-placeholder {
+        text-align: center;
+        padding: 40px;
+        color: #94a3b8;
+    }
+
+    /* Responsive Design Breakpoints */
+    @media (max-width: 1024px) {
+        .middle-section {
+            grid-template-columns: 1fr;  /* Stack columns on tablet */
+        }
+    }
+
+    @media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: 1fr 1fr;  /* Two cards per row on mobile */
+        }
+        
+        .stock-grid {
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        }
+    }
+
+    @media (max-width: 480px) {
+        .stats-grid {
+            grid-template-columns: 1fr;  /* Single column on small mobile */
+        }
+    }
+</style>
+
+{# ========================================
+   JavaScript for Dashboard Functionality
+   ======================================== #}
+<script>
+    /**
+     * Animated Counter Function
+     * Animates a number counter from 0 to target value
+     * @param {HTMLElement} element - The DOM element to update
+     * @param {number} target - The target number to count to
+     */
+    function animateCounter(element, target) {
+        if (!element) return;
+        let current = 0;
+        const duration = 1000;  // Animation duration in milliseconds
+        const step = target / (duration / 16);  // Calculate increment per frame
+        const timer = setInterval(() => {
+            current += step;
+            if (current >= target) {
+                element.textContent = Math.floor(target);
+                clearInterval(timer);
+            } else {
+                element.textContent = Math.floor(current);
+            }
+        }, 16);  // ~60fps
+    }
+
+    /**
+     * Draw Circular Progress Bar on Canvas
+     * Creates a donut chart style progress indicator
+     * @param {string} canvasId - ID of the canvas element
+     * @param {number} percentage - Percentage value (0-100)
+     * @param {string} status - Status: 'critical', 'warning', or 'good'
+     */
+    function drawProgressBar(canvasId, percentage, status) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        
+        const ctx = canvas.getContext('2d');
+        const size = 80;
+        canvas.width = size;
+        canvas.height = size;
+        
+        const centerX = size / 2;
+        const centerY = size / 2;
+        const radius = 30;
+        const startAngle = -0.5 * Math.PI;  // Start from top (12 o'clock)
+        const endAngle = startAngle + (2 * Math.PI * (percentage / 100));
+        
+        // Draw background circle (gray track)
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.lineWidth = 5;
+        ctx.stroke();
+        
+        // Draw progress arc (colored track)
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+        
+        // Color based on stock status
+        let color;
+        if (status === 'critical') color = '#e74c3c';  // Red for critical
+        else if (status === 'warning') color = '#f39c12';  // Orange for warning
+        else color = '#22c55e';  // Green for healthy
+        
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 5;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+        
+        // Draw percentage text in center
+        ctx.font = 'bold 14px "Inter"';
+        ctx.fillStyle = '#f8fafc';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(`${Math.round(percentage)}%`, centerX, centerY);
+    }
+
+    /**
+     * Load Stock Data from Flask Backend API
+     * Fetches stock health data and renders visual cards
+     */
+    async function loadStockData() {
+        try {
+            const response = await fetch('/api/stock-health');
+            const stockData = await response.json();
+            
+            const stockGrid = document.getElementById('stockGrid');
+            if (!stockData || stockData.length === 0) {
+                stockGrid.innerHTML = '<div class="loading-placeholder">No stock data available</div>';
+                return;
+            }
+            
+            stockGrid.innerHTML = '';
+            stockData.forEach((item, index) => {
+                // Calculate stock percentage relative to minimum level
+                const percentage = (item.QuantityInStock / item.MinStockLevel) * 100;
+                let status = 'good';
+                let badge = '';
+                
+                // Determine status and badge based on percentage
+                if (percentage < 20) {
+                    status = 'critical';
+                    badge = '<span class="stock-badge badge-danger">⚠️ Critical</span>';
+                } else if (percentage < 50) {
+                    status = 'warning';
+                    badge = '<span class="stock-badge badge-warning">⚠️ Low</span>';
+                } else {
+                    badge = '<span class="stock-badge badge-success">✓ Healthy</span>';
+                }
+                
+                const canvasId = `stockCanvas${index}`;
+                const stockItem = document.createElement('div');
+                stockItem.className = 'stock-item';
+                stockItem.innerHTML = `
+                    <div class="stock-name">${escapeHtml(item.IngredientName)}</div>
+                    <div class="stock-circle">
+                        <canvas id="${canvasId}" width="80" height="80"></canvas>
+                    </div>
+                    <div class="stock-quantity">${item.QuantityInStock} ${item.UnitType}</div>
+                    ${badge}
+                `;
+                stockGrid.appendChild(stockItem);
+                
+                // Draw progress bar after element is in DOM
+                setTimeout(() => {
+                    drawProgressBar(canvasId, percentage, status);
+                }, 50);
+            });
+        } catch (error) {
+            console.error('Error loading stock data:', error);
+            document.getElementById('stockGrid').innerHTML = '<div class="loading-placeholder">Unable to load stock data</div>';
+        }
+    }
+
+    /**
+     * Escape HTML to Prevent XSS Attacks
+     * Sanitizes text before inserting into DOM
+     * @param {string} text - The text to escape
+     * @returns {string} Escaped HTML string
+     */
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    /**
+     * Initialize Dashboard on Page Load
+     * - Animated counters
+     * - Load stock health data
+     */
+    document.addEventListener('DOMContentLoaded', () => {
+        // Animate all number counters
+        document.querySelectorAll('.counter').forEach(counter => {
+            const target = parseInt(counter.dataset.target);
+            if (!isNaN(target)) {
+                animateCounter(counter, target);
+            }
+        });
+        
+        // Load stock health data from API
+        loadStockData();
+    });
+</script>
+
+{# End content block #}
+{% endblock %}

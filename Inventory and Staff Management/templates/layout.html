@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<!-- ========================================
+     layout.html
+     Base Layout Template - JIBS Inventory System
+     All pages extend this template for consistent UI
+     ======================================== -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JIBS - Sip & Go Junction</title>
+    
+    <!-- Global CSS - Main stylesheet for the application -->
+    <link rel="stylesheet" href="/static/css/global.css">
+    
+    <!-- Font Awesome Icons - Icon library for UI elements -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Internal styles specific to layout structure -->
+    <style>
+        /* Main application wrapper - flex container for sidebar + content */
+        .app-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* ========================================
+           Sidebar Styles - Fixed left navigation
+           ======================================== */
+        .sidebar {
+            width: 280px;
+            background: rgba(15, 26, 22, 0.6);  /* Semi-transparent dark background */
+            backdrop-filter: blur(12px);          /* Frosted glass effect */
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;                       /* Full viewport height */
+            overflow-y: auto;                    /* Scrollable if content overflows */
+            z-index: 100;
+        }
+        
+        /* Sidebar header section - Logo and title area */
+        .sidebar-header {
+            padding: 30px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        /* Sidebar logo image styling */
+        .sidebar-logo {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            border: 2px solid #22c55e;          /* Green border around logo */
+            padding: 3px;
+            object-fit: cover;
+        }
+        
+        /* Sidebar main title */
+        .sidebar-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #f8fafc;
+        }
+        
+        /* Sidebar subtitle - Junction name */
+        .sidebar-subtitle {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 5px;
+        }
+        
+        /* Navigation menu container */
+        .nav-menu {
+            padding: 20px 0;
+        }
+        
+        /* Individual navigation item */
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 24px;
+            margin: 4px 12px;
+            color: #94a3b8;                      /* Default gray color */
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Navigation icon styling */
+        .nav-item i {
+            width: 22px;
+            font-size: 18px;
+        }
+        
+        /* Navigation text styling */
+        .nav-item span {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        /* Navigation hover effect - slide right with green tint */
+        .nav-item:hover {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+            transform: translateX(5px);          /* Slight slide effect */
+        }
+        
+        /* Active navigation item - highlighted with green border */
+        .nav-item.active {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+            border-right: 3px solid #22c55e;
+        }
+        
+        /* ========================================
+           Main Content Area
+           ======================================== */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;                  /* Space for fixed sidebar */
+            min-height: 100vh;
+            padding: 20px 30px;
+        }
+        
+        /* ========================================
+           Top Bar - User info and actions
+           ======================================== */
+        .top-bar {
+            display: flex;
+            justify-content: flex-end;           /* Push user info to the right */
+            align-items: center;
+            padding: 16px 24px;
+            background: rgba(15, 26, 22, 0.6);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        /* User information container */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        /* User avatar circle */
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #22c55e;                 /* Green background */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Logged-in user name */
+        .user-name {
+            font-weight: 600;
+            color: #f8fafc;
+        }
+        
+        /* User role (Admin/Cashier) */
+        .user-role {
+            font-size: 12px;
+            color: #22c55e;
+        }
+        
+        /* ========================================
+           Page Transition Animation
+           ======================================== */
+        .page-transition {
+            animation: fadeInUp 0.4s ease forwards;
+        }
+        
+        /* Fade in from bottom animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* ========================================
+           Responsive Design - Mobile Breakpoints
+           ======================================== */
+        @media (max-width: 768px) {
+            /* Sidebar hidden by default on mobile */
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            /* Show sidebar when mobile-open class is toggled */
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            /* Main content takes full width on mobile */
+            .main-content {
+                margin-left: 0;
+            }
+            /* Hamburger menu button for mobile */
+            .mobile-menu-toggle {
+                display: block;
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                z-index: 101;
+                background: rgba(15, 26, 22, 0.6);
+                backdrop-filter: blur(10px);
+                padding: 10px;
+                border-radius: 12px;
+                cursor: pointer;
+                color: white;
+            }
+        }
+        
+        /* Hide mobile menu toggle on desktop */
+        @media (min-width: 769px) {
+            .mobile-menu-toggle {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ========================================
+         Mobile Menu Toggle Button
+         Only visible on screens smaller than 768px
+         ======================================== -->
+    <div class="mobile-menu-toggle" onclick="toggleMobileMenu()">
+        <i class="fas fa-bars"></i>
+    </div>
+    
+    <!-- Main application wrapper - contains sidebar and content -->
+    <div class="app-wrapper">
+        
+        <!-- ========================================
+             Sidebar Navigation
+             Fixed left panel with logo and navigation links
+             ======================================== -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Sidebar Header - Logo and brand name -->
+            <div class="sidebar-header">
+                {# Logo image - hides if image fails to load #}
+                <img src="/static/images/jibslogo.jpg" alt="Logo" class="sidebar-logo" onerror="this.style.display='none'">
+                <div class="sidebar-title">JIBS</div>
+                <div class="sidebar-subtitle">Sip & Go Junction</div>
+            </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="nav-menu">
+                {# Dashboard link - active if current endpoint is 'dashboard' #}
+                <a href="/dashboard" class="nav-item {% if request.endpoint == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                
+                {# Staff Management link - active if on staff_list page #}
+                <a href="/staff" class="nav-item {% if request.endpoint == 'staff_list' %}active{% endif %}">
+                    <i class="fas fa-users"></i>
+                    <span>Staff Management</span>
+                </a>
+                
+                {# Stock Management link - active if on stock_list page #}
+                <a href="/stock" class="nav-item {% if request.endpoint == 'stock_list' %}active{% endif %}">
+                    <i class="fas fa-boxes"></i>
+                    <span>Stock Management</span>
+                </a>
+                
+                {# Low Stock Alerts link - active if on low_stock page #}
+                <a href="/low_stock" class="nav-item {% if request.endpoint == 'low_stock' %}active{% endif %}">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>Low Stock Alerts</span>
+                </a>
+                
+                {# Recipes link - active if on recipe_list page #}
+                <a href="/recipe" class="nav-item {% if request.endpoint == 'recipe_list' %}active{% endif %}">
+                    <i class="fas fa-utensils"></i>
+                    <span>Recipes</span>
+                </a>
+                
+                {# Logout link - ends user session #}
+                <a href="/logout" class="nav-item">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+        
+        <!-- ========================================
+             Main Content Area
+             Dynamic content from child templates goes here
+             ======================================== -->
+        <main class="main-content page-transition">
+            
+            <!-- Top Bar - User information and profile -->
+            <div class="top-bar">
+                {# Empty div for flex spacing #}
+                <div></div>
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        {# Display logged-in user's name - defaults to 'Admin' #}
+                        <div class="user-name">{{ staff_name if staff_name else 'Admin' }}</div>
+                        {# Display logged-in user's role - defaults to 'Administrator' #}
+                        <div class="user-role">{{ staff_role if staff_role else 'Administrator' }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ========================================
+                 Page Content Block
+                 Child templates (dashboard, stock_list, etc.) insert content here
+                 ======================================== -->
+            {% block content %}{% endblock %}
+            
+        </main>
+    </div>
+    
+    <!-- ========================================
+         JavaScript for Mobile Menu Toggle
+         ======================================== -->
+    <script>
+        /**
+         * toggleMobileMenu - Shows/hides sidebar on mobile devices
+         * Toggles the 'mobile-open' class on the sidebar element
+         */
+        function toggleMobileMenu() {
+            document.getElementById('sidebar').classList.toggle('mobile-open');
+        }
+    </script>
+</body>
+</html>

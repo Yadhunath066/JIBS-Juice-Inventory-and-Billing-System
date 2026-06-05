@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<!-- ========================================
+     login.html
+     Login Page - JIBS Inventory System
+     User authentication entry point
+     ======================================== -->
+<html>
+<head>
+    <title>Login - JIBS</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* ========================================
+           Global Reset
+           ======================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* Body styling - full viewport with dark background */
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: #060d0a;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* ========================================
+           Video Background Section
+           ======================================== */
+        /* Video container - full screen background video */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+        }
+        
+        /* Video element - covers entire screen */
+        .video-background video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: cover;
+        }
+        
+        /* Dark overlay on top of video for better text readability */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: -1;
+        }
+        
+        /* ========================================
+           Card Animation Keyframes
+           ======================================== */
+        /* Card pop animation - scales up and fades in */
+        @keyframes cardPop {
+            0% {
+                opacity: 0;
+                transform: scale(0.85) translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        
+        /* Shake animation - for error feedback */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-6px); }
+            20%, 40%, 60%, 80% { transform: translateX(6px); }
+        }
+        
+        /* Class to trigger shake animation */
+        .shake-card {
+            animation: shake 0.4s ease;
+        }
+        
+        /* ========================================
+           Glassmorphism Login Card
+           ======================================== */
+        .login-card {
+            background: rgba(15, 26, 22, 0.6);
+            backdrop-filter: blur(12px);          /* Frosted glass effect */
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 40px;
+            width: 400px;
+            text-align: center;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            animation: cardPop 0.5s cubic-bezier(0.34, 1.2, 0.64, 1);
+        }
+        
+        /* Hover effect - green glow on card border */
+        .login-card:hover {
+            border-color: rgba(34, 197, 94, 0.3);
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.1);
+        }
+        
+        /* Logo image styling - circular with green border */
+        .logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 20px;
+            border: 2px solid #22c55e;
+            padding: 3px;
+            object-fit: cover;
+        }
+        
+        /* Main heading */
+        h1 {
+            color: #f8fafc;
+            font-size: 28px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        /* Shop/brand name */
+        .shop-name {
+            color: #22c55e;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+        
+        /* ========================================
+           Floating Label Input Fields
+           ======================================== */
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        
+        /* Input field styling */
+        .input-group input {
+            width: 100%;
+            padding: 16px 12px 8px;    /* Extra top padding for floating label */
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            font-size: 15px;
+            color: #f8fafc;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+        
+        /* Focus state - green border with glow */
+        .input-group input:focus {
+            border-color: #22c55e;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        }
+        
+        /* Floating label - positioned inside input */
+        .input-group label {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            color: #94a3b8;
+            transition: all 0.2s ease;
+            pointer-events: none;      /* Allows clicks to pass through to input */
+        }
+        
+        /* Floating label when input has content or is focused */
+        .input-group.filled label,
+        .input-group input:focus + label {
+            top: 8px;
+            transform: translateY(0);
+            font-size: 10px;
+            color: #22c55e;
+        }
+        
+        /* ========================================
+           Login Button with Shimmer Effect
+           ======================================== */
+        .login-btn {
+            position: relative;
+            width: 100%;
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            overflow: hidden;            /* For shimmer effect */
+            transition: all 0.2s ease;
+        }
+        
+        /* Button hover effect */
+        .login-btn:hover {
+            background: #16a34a;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);
+        }
+        
+        /* Button active/press effect */
+        .login-btn:active {
+            transform: scale(0.97);
+        }
+        
+        /* Shimmer animation overlay */
+        .shimmer-overlay {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        /* Shimmer keyframes - sliding light effect */
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 200%; }
+        }
+        
+        /* ========================================
+           Loading Spinner
+           ======================================== */
+        .loader {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        /* Spinner rotation animation */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* ========================================
+           Error Message Styling
+           ======================================== */
+        .error {
+            color: #e74c3c;
+            margin-top: 15px;
+            font-size: 14px;
+            background: rgba(231, 76, 60, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: left;
+        }
+        
+        /* ========================================
+           Footer Links
+           ======================================== */
+        .footer-links {
+            margin-top: 25px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            font-size: 12px;
+        }
+        
+        .footer-link {
+            color: #94a3b8;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        
+        /* Footer link hover - turns green */
+        .footer-link:hover {
+            color: #22c55e;
+        }
+        
+        /* Separator between links */
+        .link-separator {
+            color: #475569;
+        }
+        
+        /* ========================================
+           Responsive Design
+           ======================================== */
+        @media (max-width: 480px) {
+            .login-card {
+                width: 90%;
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ========================================
+         Video Background Section
+         ======================================== -->
+    <div class="video-background">
+        <video autoplay muted loop playsinline>
+            {# Background video - loops continuously, no sound #}
+            <source src="{{ url_for('static', filename='videos/background.mp4') }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <!-- Dark overlay for text contrast -->
+    <div class="overlay"></div>
+    
+    <!-- ========================================
+         Login Card Container
+         ======================================== -->
+    <div class="login-card" id="loginCard">
+        
+        <!-- Logo and Brand Section -->
+        <img src="/static/images/jibslogo.jpg" alt="Logo" class="logo" onerror="this.style.display='none'">
+        <h1>JIBS</h1>
+        <div class="shop-name">Sip & Go Junction</div>
+        
+        <!-- Error Message Container - Shows login errors from backend -->
+        <div id="errorContainer">
+            {% if error %}
+            <div class="error" id="errorMsg">{{ error }}</div>
+            {% endif %}
+        </div>
+        
+        <!-- ========================================
+             Login Form
+             ======================================== -->
+        <form method="POST" id="loginForm">
+            <!-- Username Input Field -->
+            <div class="input-group" id="usernameGroup">
+                <input type="text" name="username" id="username" required>
+                <label>Username</label>
+            </div>
+            
+            <!-- Password Input Field -->
+            <div class="input-group" id="passwordGroup">
+                <input type="password" name="password" id="password" required>
+                <label>Password</label>
+            </div>
+            
+            <!-- Submit Button with Shimmer Effect -->
+            <button type="submit" class="login-btn" id="loginBtn">
+                <span class="btn-text">Sign In</span>
+                <span class="shimmer-overlay"></span>
+            </button>
+        </form>
+        
+        <!-- ========================================
+             Footer Links
+             Fixed: Links now point to actual routes
+             ======================================== -->
+        <div class="footer-links">
+            <a href="/forgot-password" class="footer-link">Forgot Password?</a>
+            <span class="link-separator">•</span>
+            <a href="/contact" class="footer-link">Contact Admin</a>
+        </div>
+    </div>
+    
+    <!-- ========================================
+         JavaScript for Interactive Elements
+         ======================================== -->
+    <script>
+        // ========================================
+        // FLOATING LABELS HANDLER
+        // Adds 'filled' class to input groups when input has content
+        // ========================================
+        document.querySelectorAll('.input-group').forEach(group => {
+            const input = group.querySelector('input');
+            
+            // Check if input has value on page load (for pre-filled fields)
+            if (input.value) {
+                group.classList.add('filled');
+            }
+            
+            // Add filled class on focus
+            input.addEventListener('focus', () => {
+                group.classList.add('filled');
+            });
+            
+            // Remove filled class on blur if input is empty
+            input.addEventListener('blur', () => {
+                if (!input.value) {
+                    group.classList.remove('filled');
+                }
+            });
+        });
+        
+        // ========================================
+        // SHAKE ANIMATION ON EXISTING ERROR
+        // Triggers shake effect when login fails
+        // ========================================
+        const loginCard = document.getElementById('loginCard');
+        const errorMsg = document.getElementById('errorMsg');
+        
+        // If there's an error message from backend, shake the card
+        if (errorMsg) {
+            setTimeout(() => {
+                loginCard.classList.add('shake-card');
+                setTimeout(() => {
+                    loginCard.classList.remove('shake-card');
+                }, 400);
+            }, 200);
+        }
+        
+        // ========================================
+        // FORM SUBMISSION WITH LOADING STATE
+        // Shows loading spinner and validates inputs
+        // ========================================
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        
+        loginForm.addEventListener('submit', function(e) {
+            // Client-side validation - both fields required
+            if (!usernameInput.value || !passwordInput.value) {
+                e.preventDefault();  // Stop form submission
+                loginCard.classList.add('shake-card');
+                setTimeout(() => {
+                    loginCard.classList.remove('shake-card');
+                }, 400);
+                return;
+            }
+            
+            // Show loading state on button
+            const btnText = loginBtn.querySelector('.btn-text');
+            btnText.textContent = 'Authenticating...';
+            loginBtn.innerHTML = '<span class="loader"></span><span class="btn-text">Authenticating...</span>';
+            loginBtn.disabled = true;
+            
+            // Form will submit normally to Flask backend
+            // If login fails, page reloads with error message
+            // If login succeeds, redirects to dashboard
+        });
+        
+        // ========================================
+        // BUTTON SCALE ANIMATION ON CLICK
+        // Provides tactile feedback when clicking button
+        // ========================================
+        loginBtn.addEventListener('mousedown', () => {
+            loginBtn.style.transform = 'scale(0.97)';
+        });
+        
+        loginBtn.addEventListener('mouseup', () => {
+            loginBtn.style.transform = '';
+        });
+        
+        loginBtn.addEventListener('mouseleave', () => {
+            loginBtn.style.transform = '';
+        });
+    </script>
+</body>
+</html>

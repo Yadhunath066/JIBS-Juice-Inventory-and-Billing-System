@@ -1,0 +1,338 @@
+{# ========================================
+   staff_edit.html
+   Edit Staff Member Page - JIBS Inventory System
+   Form for editing existing staff members with pre-populated values
+   ======================================== #}
+
+{# Extend the base layout template #}
+{% extends "layout.html" %}
+
+{# Begin content block that will be inserted into layout #}
+{% block content %}
+
+{# Main container for edit staff page #}
+<div class="staff-edit-container">
+    
+    {# ========================================
+       Page Header Section
+       ======================================== #}
+    <div class="page-header">
+        <h1>Edit Staff Member</h1>
+    </div>
+    
+    {# ========================================
+       Form Card Container
+       ======================================== #}
+    <div class="form-card">
+        
+        {# Display error message if validation fails on server side #}
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+        
+        {# ========================================
+           Edit Staff Form - POSTs to /staff/edit/[id]
+           Form fields pre-populated with current staff data
+           ======================================== #}
+        <form method="POST" action="/staff/edit/{{ staff.StaffID }}">
+            
+            {# Full Name Field - Pre-populated with current name #}
+            <div class="form-group floating-group">
+                <input type="text" id="fullName" name="full_name" value="{{ staff.FullName }}" required placeholder=" ">
+                <label for="fullName">Full Name</label>
+            </div>
+            
+            {# Username Field - Pre-populated with current username #}
+            <div class="form-group floating-group">
+                <input type="text" id="username" name="username" value="{{ staff.Username }}" required placeholder=" ">
+                <label for="username">Username</label>
+            </div>
+            
+            {# Password Field - Optional, leave blank to keep current password #}
+            <div class="form-group floating-group">
+                <input type="password" id="password" name="password" placeholder=" ">
+                <label for="password">New Password (leave blank to keep current)</label>
+            </div>
+            
+            {# Role Dropdown - Admin or Cashier, pre-selected with current role #}
+            <div class="form-group floating-group">
+                <select id="role" name="role" required>
+                    <option value="Cashier" {% if staff.Role == 'Cashier' %}selected{% endif %}>Cashier</option>
+                    <option value="Admin" {% if staff.Role == 'Admin' %}selected{% endif %}>Admin</option>
+                </select>
+                <label for="role">Role</label>
+            </div>
+            
+            {# Active Status Checkbox - Controls if staff can login #}
+            <div class="form-group checkbox-group">
+                <input type="checkbox" name="is_active" value="1" id="isActive" {% if staff.IsActive == 1 %}checked{% endif %}>
+                <label for="isActive">Active (staff can login)</label>
+            </div>
+            
+            {# ========================================
+               Form Action Buttons
+               ======================================== #}
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+                <a href="/staff" class="btn btn-secondary">Cancel</a>
+            </div>
+            
+        </form>
+    </div>
+</div>
+
+{# ========================================
+   Custom CSS Styles for Edit Staff Page
+   ======================================== #}
+<style>
+    /* Main container animation - fade in from bottom */
+    .staff-edit-container {
+        animation: fadeInUp 0.4s ease;
+    }
+    
+    /* Page header title - green left border for visual identity */
+    .page-header h1 {
+        font-size: 28px;
+        color: #f8fafc;
+        border-left: 5px solid #22c55e;
+        padding-left: 15px;
+        margin-bottom: 25px;
+    }
+    
+    /* Form card - glass morphism effect with frosted background */
+    .form-card {
+        background: rgba(15, 26, 22, 0.6);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 30px;
+        max-width: 500px;
+        transition: all 0.3s ease;
+    }
+    
+    /* Hover effect - green glow on card border */
+    .form-card:hover {
+        border-color: rgba(34, 197, 94, 0.3);
+        box-shadow: 0 0 20px rgba(34, 197, 94, 0.1);
+    }
+    
+    /* Spacing between form fields */
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    /* ========================================
+       Floating Label Styles
+       Label moves up when input has content or is focused
+       ======================================== */
+    .floating-group {
+        position: relative;
+    }
+    
+    /* Input and select field base styling */
+    .floating-group input, 
+    .floating-group select {
+        width: 100%;
+        padding: 16px 12px 8px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        font-size: 15px;
+        color: #f8fafc;
+        transition: all 0.2s ease;
+        outline: none;
+    }
+    
+    /* Select dropdown specific padding */
+    .floating-group select {
+        padding: 14px 12px 8px;
+        cursor: pointer;
+    }
+    
+    /* Focus state - green border with subtle glow */
+    .floating-group input:focus,
+    .floating-group select:focus {
+        border-color: #22c55e;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+    }
+    
+    /* Floating label - positioned inside input */
+    .floating-group label {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 14px;
+        color: #94a3b8;
+        transition: all 0.2s ease;
+        pointer-events: none;
+    }
+    
+    /* Label moves up when input has content or is focused */
+    .floating-group input:focus + label,
+    .floating-group input:not(:placeholder-shown) + label,
+    .floating-group select:focus + label,
+    .floating-group select:not([value=""]) + label {
+        top: 8px;
+        transform: translateY(0);
+        font-size: 10px;
+        color: #22c55e;
+    }
+    
+    /* ========================================
+       Checkbox Group Styles
+       ======================================== */
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    /* Checkbox - auto width */
+    .checkbox-group input {
+        width: auto;
+    }
+    
+    /* Checkbox label - no floating behavior */
+    .checkbox-group label {
+        margin-bottom: 0;
+        cursor: pointer;
+        position: static;
+        transform: none;
+        font-size: 14px;
+        color: #f8fafc;
+    }
+    
+    /* ========================================
+       Error Message Styling
+       ======================================== */
+    .error {
+        background: rgba(231, 76, 60, 0.1);
+        border-left: 3px solid #e74c3c;
+        color: #e74c3c;
+        padding: 12px 16px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        white-space: pre-line;
+    }
+    
+    /* ========================================
+       Button Group Styles
+       ======================================== */
+    .button-group {
+        display: flex;
+        gap: 15px;
+        margin-top: 10px;
+    }
+    
+    /* ========================================
+       Button Styles
+       ======================================== */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        border: none;
+        font-size: 14px;
+    }
+    
+    /* Primary button - solid green background */
+    .btn-primary {
+        background: #22c55e;
+        color: white;
+    }
+    
+    /* Primary button hover - darker green with lift effect */
+    .btn-primary:hover {
+        background: #16a34a;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);
+    }
+    
+    /* Secondary button - transparent with border */
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #f8fafc;
+    }
+    
+    /* Secondary button hover - more visible with green border */
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: #22c55e;
+        transform: translateY(-2px);
+    }
+    
+    /* Initial placeholder setup for floating labels */
+    input:not(:placeholder-shown) {
+        padding-top: 16px;
+        padding-bottom: 8px;
+    }
+    
+    /* ========================================
+       Responsive Design for Mobile Devices
+       ======================================== */
+    @media (max-width: 768px) {
+        /* Full width form card on mobile */
+        .form-card {
+            width: 100%;
+            margin: 0;
+        }
+        
+        /* Stack buttons vertically on mobile */
+        .button-group {
+            flex-direction: column;
+        }
+        
+        /* Center button text on mobile */
+        .btn {
+            justify-content: center;
+        }
+    }
+</style>
+
+{# ========================================
+   JavaScript for Floating Labels Initialization
+   ======================================== #}
+<script>
+    /**
+     * Initialize floating labels on page load
+     * Sets placeholder attribute for fields that already have values
+     * Handles focus and blur events for floating label behavior
+     */
+    document.addEventListener('DOMContentLoaded', function() {
+        // For all input and select fields with placeholder=" ", check if they have value
+        document.querySelectorAll('.floating-group input, .floating-group select').forEach(input => {
+            if (input.value) {
+                input.setAttribute('placeholder', ' ');
+            }
+        });
+        
+        // Add placeholder on focus, remove on blur if empty
+        document.querySelectorAll('.floating-group input, .floating-group select').forEach(input => {
+            // On focus - always show placeholder to trigger floating label
+            input.addEventListener('focus', () => {
+                input.setAttribute('placeholder', ' ');
+            });
+            
+            // On blur - remove placeholder if empty, keep if has value
+            input.addEventListener('blur', () => {
+                if (!input.value) {
+                    input.removeAttribute('placeholder');
+                } else {
+                    input.setAttribute('placeholder', ' ');
+                }
+            });
+        });
+    });
+</script>
+
+{# End content block #}
+{% endblock %}

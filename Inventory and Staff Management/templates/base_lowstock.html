@@ -1,0 +1,181 @@
+{# ========================================
+   low_stock.html
+   Low Stock Alerts Page - JIBS Inventory System
+   Displays ingredients that are below minimum stock level
+   ======================================== #}
+
+{# Extend the base layout template #}
+{% extends "layout.html" %}
+
+{# Begin content block that will be inserted into layout #}
+{% block content %}
+
+{# Main container for low stock page #}
+<div class="lowstock-container">
+    
+    {# Page Header Section - Title and back button #}
+    <div class="page-header">
+        {# Page title with warning emoji and red left border #}
+        <h1>⚠️ Low Stock Alerts</h1>
+        {# Back button to return to stock management page #}
+        <a href="/stock" class="btn btn-outline">← Back to Stock Management</a>
+    </div>
+    
+    {# Warning Card - Informational message about restocking #}
+    <div class="warning-card">
+        <strong>⚠️ Alert:</strong> Items below minimum stock level need to be reordered immediately.
+    </div>
+    
+    {# Check if there are any low stock items #}
+    {% if items %}
+    
+    {# Display low stock items in a table #}
+    <table class="glass-table">
+        {# Table headers #}
+        <thead>
+            <tr>
+                <th>Ingredient</th>          {# Name of the ingredient #}
+                <th>Current Stock</th>       {# Current quantity in stock #}
+                <th>Minimum Level</th>       {# Minimum threshold level #}
+                <th>Unit</th>                {# Unit of measurement (kg, L, pcs, etc.) #}
+                <th>Shortage</th>            {# How many units below minimum #}
+                <th>Action</th>              {# Action button to restock #}
+            </tr>
+        </thead>
+        
+        {# Table body - Loop through each low stock item #}
+        <tbody>
+            {% for item in items %}
+            <tr>
+                {# Ingredient name - highlighted as critical #}
+                <td class="critical">{{ item.IngredientName }}</td>
+                
+                {# Current quantity - highlighted as critical #}
+                <td class="critical">{{ item.QuantityInStock }}</td>
+                
+                {# Minimum stock level #}
+                <td>{{ item.MinStockLevel }}</td>
+                
+                {# Unit type #}
+                <td>{{ item.UnitType }}</td>
+                
+                {# Calculate shortage: MinLevel - CurrentQuantity #}
+                <td class="critical">{{ item.MinStockLevel - item.QuantityInStock }} units below minimum</td>
+                
+                {# Action button - Link to edit page for restocking #}
+                <td>
+                    <a href="/stock/edit/{{ item.StockID }}" class="btn btn-sm btn-primary">🔄 Restock Now</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {# If no low stock items - Show success message #}
+    {% else %}
+    <div class="empty-state">
+        {# Success message in green #}
+        <p style="color: #22c55e; font-size: 18px;">✅ All ingredients are above minimum stock levels.</p>
+        <p>No low stock alerts at this time.</p>
+    </div>
+    {% endif %}
+</div>
+
+{# ========================================
+   Custom CSS Styles for Low Stock Page
+   ======================================== #}
+<style>
+    /* Main container animation - fade in from bottom */
+    .lowstock-container {
+        animation: fadeInUp 0.4s ease;
+    }
+    
+    /* Page header layout - flex between title and button */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+    
+    /* Page header title styling - red left border for warning */
+    .page-header h1 {
+        font-size: 28px;
+        color: #f8fafc;
+        border-left: 5px solid #e74c3c;  /* Red border indicates warning */
+        padding-left: 15px;
+    }
+    
+    /* Base button styling */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        font-size: 14px;
+    }
+    
+    /* Outline button - transparent with border */
+    .btn-outline {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #f8fafc;
+    }
+    
+    /* Outline button hover effect - green border */
+    .btn-outline:hover {
+        border-color: #22c55e;
+        background: rgba(34, 197, 94, 0.1);
+    }
+    
+    /* Primary button - solid green */
+    .btn-primary {
+        background: #22c55e;
+        color: white;
+    }
+    
+    /* Primary button hover - darker green */
+    .btn-primary:hover {
+        background: #16a34a;
+    }
+    
+    /* Small button size for table actions */
+    .btn-sm {
+        padding: 5px 12px;
+        font-size: 12px;
+    }
+    
+    /* Warning card styling - orange background with red left border */
+    .warning-card {
+        background: rgba(243, 156, 18, 0.1);
+        border-left: 4px solid #e74c3c;
+        padding: 15px 20px;
+        margin-bottom: 25px;
+        border-radius: 12px;
+        color: #f8fafc;
+    }
+    
+    /* Critical stock styling - red text for urgent items */
+    .critical {
+        color: #e74c3c;
+        font-weight: bold;
+    }
+    
+    /* Empty state styling - shown when no low stock items */
+    .empty-state {
+        background: rgba(15, 26, 22, 0.6);
+        backdrop-filter: blur(12px);
+        border-radius: 20px;
+        padding: 40px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+</style>
+
+{# End content block #}
+{% endblock %}

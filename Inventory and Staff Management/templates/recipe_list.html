@@ -1,0 +1,1149 @@
+{# ========================================
+   recipe_list.html
+   Recipe Management Page - JIBS Inventory System
+   Split-view interface for creating and managing recipes
+   Features: Recipe builder, cost analysis, profit calculator, print preview
+   ======================================== #}
+
+{# Extend the base layout template #}
+{% extends "layout.html" %}
+
+{# Begin content block that will be inserted into layout #}
+{% block content %}
+
+{# Main container for recipe management page #}
+<div class="recipe-container">
+    
+    {# ========================================
+       Page Header Section
+       ======================================== #}
+    <div class="page-header">
+        <h1>🍽️ Recipe Management</h1>
+        <p>Create recipes, calculate costs, and track profit margins</p>
+    </div>
+
+    <!-- ========================================
+         Split View Layout
+         Left: Recipe List | Right: Recipe Builder
+         ======================================== -->
+    <div class="split-view">
+        
+        <!-- ========================================
+             LEFT SIDE: Recipe Sidebar
+             Displays list of existing recipes
+             ======================================== -->
+        <div class="recipe-sidebar glass-card">
+            <div class="sidebar-header">
+                <h2>📋 Recipes</h2>
+                <button class="btn btn-sm btn-primary" onclick="openRecipeBuilder()">
+                    <i class="fas fa-plus"></i> New Recipe
+                </button>
+            </div>
+            
+            <!-- Search Bar for filtering recipes -->
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="recipeSearch" placeholder="Search recipes..." onkeyup="filterRecipes()">
+            </div>
+            
+            <!-- Recipe List Container -->
+            <div class="recipe-list" id="recipeList">
+                {% if recipes %}
+                    {# Loop through all recipes and display each one #}
+                    {% for recipe in recipes %}
+                    <div class="recipe-item" data-id="{{ recipe.RecipeID }}" data-name="Recipe {{ recipe.RecipeID }}" onclick="selectRecipe({{ recipe.RecipeID }})">
+                        <div class="recipe-icon">🍹</div>
+                        <div class="recipe-info">
+                            <h4>Recipe #{{ recipe.RecipeID }}</h4>
+                            <p>{{ recipe.IngredientName }} + {{ recipe.QuantityUsed }} units</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    {# Empty state - no recipes exist yet #}
+                    <div class="empty-state">
+                        <p>No recipes yet.</p>
+                        <p>Click "New Recipe" to create one.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- ========================================
+             RIGHT SIDE: Recipe Builder
+             Main interface for creating/editing recipes
+             ======================================== -->
+        <div class="recipe-builder glass-card" id="recipeBuilder">
+            <div class="builder-header">
+                <h2 id="builderTitle">Recipe Builder</h2>
+                <div class="builder-actions">
+                    <button class="btn btn-outline" onclick="togglePreview()">
+                        <i class="fas fa-eye"></i> Preview
+                    </button>
+                    <button class="btn btn-primary" onclick="saveRecipe()">
+                        <i class="fas fa-save"></i> Save Recipe
+                    </button>
+                </div>
+            </div>
+            
+            <!-- ========================================
+                 BUILDER MODE - Edit/Create Recipe
+                 ======================================== -->
+            <div id="builderMode">
+                <!-- Recipe Name Input -->
+                <div class="form-group floating-group">
+                    <input type="text" id="recipeName" placeholder=" " value="New Recipe">
+                    <label>Recipe Name</label>
+                </div>
+                
+                <!-- Menu Item ID - Links to external POS system -->
+                <div class="form-group floating-group">
+                    <input type="text" id="menuItemId" placeholder=" " value="">
+                    <label>Menu Item ID (from Monika's system)</label>
+                </div>
+                
+                <!-- Ingredient Picker - Add ingredients to recipe -->
+                <div class="ingredient-picker">
+                    <label>Add Ingredient</label>
+                    <div class="picker-control">
+                        <select id="ingredientSelect" class="ingredient-select">
+                            <option value="">-- Select Ingredient --</option>
+                            {# Populate dropdown with all stock items #}
+                            {% for stock in stock_items %}
+                            <option value="{{ stock.StockID }}" data-name="{{ stock.IngredientName }}" data-unit="{{ stock.UnitType }}" data-price="10">{{ stock.IngredientName }} ({{ stock.UnitType }})</option>
+                            {% endfor %}
+                        </select>
+                        <input type="number" id="ingredientQuantity" placeholder="Qty" value="1" step="0.1" style="width: 80px;">
+                        <button class="btn btn-sm btn-primary" onclick="addIngredient()">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Ingredients List - Dynamic list of added ingredients -->
+                <div class="ingredients-list">
+                    <h3>Ingredients</h3>
+                    <div id="ingredientsContainer">
+                        <div class="empty-ingredients">No ingredients added yet.</div>
+                    </div>
+                </div>
+                
+                <!-- ========================================
+                     PROFIT CALCULATOR
+                     Calculates cost, profit margin, and gives advice
+                     ======================================== -->
+                <div class="profit-calculator">
+                    <div class="calculator-card">
+                        <h3>💰 Cost & Profit Analysis</h3>
+                        <div class="cost-row">
+                            <span>Total Cost to Make:</span>
+                            <span class="cost-value" id="totalCost">DKK 0.00</span>
+                        </div>
+                        <div class="cost-row">
+                            <span>Selling Price:</span>
+                            <input type="number" id="sellingPrice" class="selling-price-input" placeholder="Enter selling price" step="0.01" oninput="calculateProfit()">
+                        </div>
+                        <div class="profit-margin" id="profitMargin">
+                            <span>Profit Margin:</span>
+                            <span class="margin-value" id="marginValue">--%</span>
+                        </div>
+                        <!-- Visual profit bar -->
+                        <div class="profit-bar-container">
+                            <div class="profit-bar" id="profitBar" style="width: 0%;"></div>
+                        </div>
+                        <!-- Dynamic profit advice text -->
+                        <div class="profit-advice" id="profitAdvice"></div>
+                    </div>
+                </div>
+                
+                <!-- Preparation Instructions -->
+                <div class="form-group">
+                    <label>Preparation Instructions</label>
+                    <textarea id="instructions" rows="3" placeholder="Blend all ingredients until smooth. Serve chilled."></textarea>
+                </div>
+            </div>
+            
+            <!-- ========================================
+                 PREVIEW MODE - Recipe Preview
+                 Shows how the recipe will look when printed
+                 ======================================== -->
+            <div id="previewMode" style="display: none;">
+                <div class="recipe-preview-card">
+                    <div class="preview-header">
+                        <div class="preview-icon">🍹</div>
+                        <h3 id="previewName">New Recipe</h3>
+                    </div>
+                    <div class="preview-section">
+                        <h4>Menu Item ID</h4>
+                        <p id="previewMenuItemId">Not linked</p>
+                    </div>
+                    <div class="preview-section">
+                        <h4>Ingredients</h4>
+                        <ul id="previewIngredientsList">
+                            <li>No ingredients added</li>
+                        </ul>
+                    </div>
+                    <div class="preview-section">
+                        <h4>Cost Breakdown</h4>
+                        <p>Total Cost: <strong id="previewCost">DKK 0.00</strong></p>
+                        <p>Selling Price: <strong id="previewPrice">DKK 0.00</strong></p>
+                        <p>Profit Margin: <strong id="previewMargin">--%</strong></p>
+                    </div>
+                    <div class="preview-section">
+                        <h4>Instructions</h4>
+                        <p id="previewInstructions">No instructions provided.</p>
+                    </div>
+                    <button class="btn btn-outline" onclick="printRecipe()">
+                        <i class="fas fa-print"></i> Print Recipe
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ========================================
+   Custom CSS Styles for Recipe Management Page
+   ======================================== #}
+<style>
+    /* Main container animation */
+    .recipe-container {
+        animation: fadeInUp 0.4s ease;
+    }
+    
+    /* Page header styling */
+    .page-header h1 {
+        font-size: 28px;
+        color: #f8fafc;
+        border-left: 5px solid #22c55e;
+        padding-left: 15px;
+        margin-bottom: 8px;
+    }
+    
+    .page-header p {
+        color: #94a3b8;
+        margin-left: 20px;
+        font-size: 14px;
+        margin-bottom: 25px;
+    }
+    
+    /* Split view - two column layout */
+    .split-view {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 24px;
+        min-height: 70vh;
+    }
+    
+    /* ========================================
+       Left Sidebar Styles
+       ======================================== */
+    .recipe-sidebar {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+    
+    .sidebar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .sidebar-header h2 {
+        font-size: 18px;
+        color: #f8fafc;
+    }
+    
+    /* Search box styling */
+    .search-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 40px;
+        padding: 8px 16px;
+    }
+    
+    .search-box i {
+        color: #94a3b8;
+    }
+    
+    .search-box input {
+        background: transparent;
+        border: none;
+        color: #f8fafc;
+        width: 100%;
+        outline: none;
+    }
+    
+    /* Recipe list container */
+    .recipe-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    /* Individual recipe item */
+    .recipe-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 16px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .recipe-item:hover {
+        background: rgba(34, 197, 94, 0.15);
+        transform: translateX(5px);
+    }
+    
+    .recipe-icon {
+        font-size: 28px;
+    }
+    
+    .recipe-info h4 {
+        font-size: 14px;
+        color: #f8fafc;
+        margin-bottom: 4px;
+    }
+    
+    .recipe-info p {
+        font-size: 11px;
+        color: #94a3b8;
+    }
+    
+    /* ========================================
+       Right Side Builder Styles
+       ======================================== */
+    .recipe-builder {
+        padding: 24px;
+        max-height: 70vh;
+        overflow-y: auto;
+    }
+    
+    .builder-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .builder-header h2 {
+        font-size: 20px;
+        color: #f8fafc;
+    }
+    
+    .builder-actions {
+        display: flex;
+        gap: 12px;
+    }
+    
+    /* ========================================
+       Form Elements
+       ======================================== */
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    /* Floating label input group */
+    .floating-group {
+        position: relative;
+    }
+    
+    .floating-group input {
+        width: 100%;
+        padding: 16px 12px 8px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        font-size: 15px;
+        color: #f8fafc;
+        outline: none;
+    }
+    
+    .floating-group input:focus {
+        border-color: #22c55e;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+    }
+    
+    /* Floating label - moves up when input is focused/has value */
+    .floating-group label {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 14px;
+        color: #94a3b8;
+        transition: all 0.2s ease;
+        pointer-events: none;
+    }
+    
+    .floating-group input:focus + label,
+    .floating-group input:not(:placeholder-shown) + label {
+        top: 8px;
+        transform: translateY(0);
+        font-size: 10px;
+        color: #22c55e;
+    }
+    
+    /* Textarea styling */
+    textarea {
+        width: 100%;
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        color: #f8fafc;
+        resize: vertical;
+        font-family: inherit;
+    }
+    
+    textarea:focus {
+        outline: none;
+        border-color: #22c55e;
+    }
+    
+    /* ========================================
+       Ingredient Picker
+       ======================================== */
+    .ingredient-picker {
+        margin-bottom: 24px;
+    }
+    
+    .ingredient-picker label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #94a3b8;
+        font-size: 13px;
+    }
+    
+    .picker-control {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    
+    .ingredient-select {
+        flex: 1;
+        padding: 10px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        color: #f8fafc;
+    }
+    
+    /* ========================================
+       Ingredients List - Dynamic rows
+       ======================================== */
+    .ingredients-list {
+        margin-bottom: 24px;
+    }
+    
+    .ingredients-list h3 {
+        font-size: 16px;
+        color: #f8fafc;
+        margin-bottom: 12px;
+    }
+    
+    /* Individual ingredient row */
+    .ingredient-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
+        margin-bottom: 8px;
+        animation: slideIn 0.2s ease;
+    }
+    
+    /* Slide in animation for new ingredients */
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    /* Remove animation */
+    .ingredient-row.removing {
+        animation: slideOut 0.2s ease forwards;
+    }
+    
+    @keyframes slideOut {
+        to {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+    }
+    
+    .ingredient-info {
+        flex: 1;
+    }
+    
+    .ingredient-name {
+        font-weight: 600;
+        color: #f8fafc;
+        margin-bottom: 4px;
+    }
+    
+    .ingredient-unit {
+        font-size: 11px;
+        color: #94a3b8;
+    }
+    
+    .ingredient-quantity {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .ingredient-quantity input {
+        width: 80px;
+        padding: 6px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        color: #f8fafc;
+        text-align: center;
+    }
+    
+    .remove-ingredient {
+        background: transparent;
+        border: none;
+        color: #e74c3c;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 6px;
+    }
+    
+    .remove-ingredient:hover {
+        background: rgba(231, 76, 60, 0.2);
+    }
+    
+    .empty-ingredients {
+        text-align: center;
+        padding: 20px;
+        color: #94a3b8;
+        font-size: 13px;
+    }
+    
+    /* ========================================
+       Profit Calculator Styles
+       ======================================== */
+    .profit-calculator {
+        margin-bottom: 24px;
+    }
+    
+    .calculator-card {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 16px;
+        padding: 16px;
+    }
+    
+    .calculator-card h3 {
+        font-size: 14px;
+        color: #94a3b8;
+        margin-bottom: 16px;
+    }
+    
+    .cost-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+    
+    .cost-row span:first-child {
+        color: #94a3b8;
+    }
+    
+    .cost-value {
+        font-size: 20px;
+        font-weight: bold;
+        color: #22c55e;
+        transition: transform 0.2s ease, color 0.2s ease;
+    }
+    
+    .selling-price-input {
+        width: 120px;
+        padding: 8px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        color: #f8fafc;
+        text-align: right;
+    }
+    
+    .profit-margin {
+        margin: 16px 0;
+        padding: 12px;
+        border-radius: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background 0.2s ease;
+    }
+    
+    .margin-value {
+        font-size: 24px;
+        font-weight: bold;
+        transition: color 0.2s ease;
+    }
+    
+    /* Visual profit bar */
+    .profit-bar-container {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        height: 8px;
+        overflow: hidden;
+        margin-bottom: 12px;
+    }
+    
+    .profit-bar {
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.3s ease;
+    }
+    
+    .profit-advice {
+        font-size: 12px;
+        margin-top: 8px;
+    }
+    
+    /* ========================================
+       Preview Card Styles
+       ======================================== */
+    .recipe-preview-card {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 20px;
+        padding: 24px;
+    }
+    
+    .preview-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    
+    .preview-icon {
+        font-size: 48px;
+    }
+    
+    .preview-header h3 {
+        font-size: 22px;
+        color: #f8fafc;
+    }
+    
+    .preview-section {
+        margin-bottom: 20px;
+    }
+    
+    .preview-section h4 {
+        font-size: 14px;
+        color: #22c55e;
+        margin-bottom: 8px;
+    }
+    
+    .preview-section ul {
+        list-style: none;
+        padding-left: 0;
+    }
+    
+    .preview-section li {
+        padding: 4px 0;
+        color: #94a3b8;
+    }
+    
+    /* ========================================
+       Button Styles
+       ======================================== */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: 10px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        border: none;
+        font-size: 13px;
+    }
+    
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    .btn-primary {
+        background: #22c55e;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #16a34a;
+        transform: translateY(-2px);
+    }
+    
+    .btn-outline {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #f8fafc;
+    }
+    
+    .btn-outline:hover {
+        border-color: #22c55e;
+        background: rgba(34, 197, 94, 0.1);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #94a3b8;
+    }
+    
+    /* ========================================
+       Responsive Design
+       ======================================== */
+    @media (max-width: 768px) {
+        .split-view {
+            grid-template-columns: 1fr;  /* Stack columns on mobile */
+        }
+        
+        .recipe-sidebar {
+            max-height: 300px;
+        }
+    }
+</style>
+
+{# ========================================
+   JavaScript for Recipe Management
+   ======================================== #}
+<script>
+    // Global variables
+    let ingredients = [];           // Array to store selected ingredients
+    let currentRecipeId = null;     // ID of recipe being edited (null for new)
+    let isPreviewMode = false;       // Track preview mode state
+    
+    // Stock items data populated from backend
+    const stockItems = [
+        {% for stock in stock_items %}
+        { id: {{ stock.StockID }}, name: "{{ stock.IngredientName }}", unit: "{{ stock.UnitType }}", pricePerUnit: 10 },
+        {% endfor %}
+    ];
+    
+    /**
+     * Find stock item by ID from the stockItems array
+     * @param {number} id - Stock item ID
+     * @returns {object} Stock item object
+     */
+    function findStockItem(id) {
+        return stockItems.find(item => item.id == id);
+    }
+    
+    /**
+     * Add selected ingredient to the recipe
+     * Reads from dropdown and quantity input, validates, then adds to ingredients array
+     */
+    function addIngredient() {
+        const select = document.getElementById('ingredientSelect');
+        const stockId = select.value;
+        const quantity = parseFloat(document.getElementById('ingredientQuantity').value);
+        
+        // Validate input
+        if (!stockId || !quantity || quantity <= 0) {
+            alert('Please select an ingredient and enter a valid quantity');
+            return;
+        }
+        
+        const stockItem = findStockItem(stockId);
+        if (!stockItem) return;
+        
+        // Add to ingredients array
+        ingredients.push({
+            id: stockItem.id,
+            name: stockItem.name,
+            unit: stockItem.unit,
+            quantity: quantity,
+            pricePerUnit: stockItem.pricePerUnit,
+            totalCost: stockItem.pricePerUnit * quantity
+        });
+        
+        // Update UI
+        renderIngredientsList();
+        calculateTotalCost();
+        
+        // Reset form fields
+        select.value = '';
+        document.getElementById('ingredientQuantity').value = '1';
+    }
+    
+    /**
+     * Remove ingredient from recipe by index
+     * @param {number} index - Index of ingredient to remove
+     */
+    function removeIngredient(index) {
+        const row = document.querySelector(`.ingredient-row[data-index="${index}"]`);
+        if (row) {
+            row.classList.add('removing');
+            setTimeout(() => {
+                ingredients.splice(index, 1);
+                renderIngredientsList();
+                calculateTotalCost();
+            }, 200);
+        } else {
+            ingredients.splice(index, 1);
+            renderIngredientsList();
+            calculateTotalCost();
+        }
+    }
+    
+    /**
+     * Update ingredient quantity
+     * @param {number} index - Index of ingredient to update
+     * @param {number} newQuantity - New quantity value
+     */
+    function updateIngredientQuantity(index, newQuantity) {
+        if (newQuantity <= 0) {
+            removeIngredient(index);
+            return;
+        }
+        ingredients[index].quantity = newQuantity;
+        ingredients[index].totalCost = ingredients[index].pricePerUnit * newQuantity;
+        renderIngredientsList();
+        calculateTotalCost();
+    }
+    
+    /**
+     * Render the ingredients list in the UI
+     * Creates HTML for each ingredient with quantity controls
+     */
+    function renderIngredientsList() {
+        const container = document.getElementById('ingredientsContainer');
+        if (!ingredients.length) {
+            container.innerHTML = '<div class="empty-ingredients">No ingredients added yet. Select ingredients above.</div>';
+            return;
+        }
+        
+        container.innerHTML = '';
+        ingredients.forEach((ing, idx) => {
+            const row = document.createElement('div');
+            row.className = 'ingredient-row';
+            row.setAttribute('data-index', idx);
+            row.innerHTML = `
+                <div class="ingredient-info">
+                    <div class="ingredient-name">${ing.name}</div>
+                    <div class="ingredient-unit">${ing.unit} | ${ing.pricePerUnit} DKK/unit</div>
+                </div>
+                <div class="ingredient-quantity">
+                    <input type="number" value="${ing.quantity}" step="0.1" onchange="updateIngredientQuantity(${idx}, this.value)">
+                    <span>${ing.unit}</span>
+                    <button class="remove-ingredient" onclick="removeIngredient(${idx})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(row);
+        });
+    }
+    
+    /**
+     * Calculate and display total cost of all ingredients
+     * @returns {number} Total cost
+     */
+    function calculateTotalCost() {
+        const total = ingredients.reduce((sum, ing) => sum + ing.totalCost, 0);
+        const totalElement = document.getElementById('totalCost');
+        
+        // Animate the cost value
+        totalElement.style.transform = 'scale(1.1)';
+        totalElement.style.color = '#22c55e';
+        totalElement.textContent = `DKK ${total.toFixed(2)}`;
+        
+        setTimeout(() => {
+            totalElement.style.transform = 'scale(1)';
+        }, 200);
+        
+        calculateProfit();
+        return total;
+    }
+    
+    /**
+     * Calculate profit margin based on total cost and selling price
+     * Updates profit bar, margin display, and gives advice
+     */
+    function calculateProfit() {
+        const totalCost = ingredients.reduce((sum, ing) => sum + ing.totalCost, 0);
+        const sellingPrice = parseFloat(document.getElementById('sellingPrice').value);
+        const marginValue = document.getElementById('marginValue');
+        const profitBar = document.getElementById('profitBar');
+        const profitAdvice = document.getElementById('profitAdvice');
+        const profitMargin = document.getElementById('profitMargin');
+        
+        if (!sellingPrice || sellingPrice <= 0) {
+            marginValue.textContent = '--%';
+            profitBar.style.width = '0%';
+            profitBar.style.background = '#94a3b8';
+            profitAdvice.innerHTML = '';
+            if (document.getElementById('previewMargin')) {
+                document.getElementById('previewMargin').textContent = '--%';
+            }
+            return;
+        }
+        
+        const profit = sellingPrice - totalCost;
+        const margin = (profit / sellingPrice) * 100;
+        
+        marginValue.textContent = `${margin.toFixed(1)}%`;
+        let barColor, adviceText;
+        
+        // Determine margin tier and corresponding advice
+        if (margin >= 60) {
+            barColor = '#22c55e';
+            adviceText = 'Excellent margin! Great profit potential.';
+        } else if (margin >= 40) {
+            barColor = '#f39c12';
+            adviceText = 'Good margin. Could be better.';
+        } else if (margin >= 30) {
+            barColor = '#e67e22';
+            adviceText = 'Average margin. Consider adjusting price.';
+        } else {
+            barColor = '#e74c3c';
+            adviceText = 'Low margin! Increase selling price or reduce costs.';
+        }
+        
+        // Update visual elements
+        profitBar.style.width = `${Math.min(margin, 100)}%`;
+        profitBar.style.background = barColor;
+        profitMargin.style.background = `rgba(${margin >= 60 ? '34, 197, 94' : margin >= 30 ? '243, 156, 18' : '231, 76, 60'}, 0.1)`;
+        profitMargin.style.borderLeft = `3px solid ${barColor}`;
+        
+        // Update margin text color
+        if (margin < 30) {
+            marginValue.style.color = '#e74c3c';
+        } else if (margin >= 60) {
+            marginValue.style.color = '#22c55e';
+        } else {
+            marginValue.style.color = '#f39c12';
+        }
+        
+        profitAdvice.innerHTML = adviceText;
+        
+        // Update preview mode values if visible
+        if (document.getElementById('previewCost')) {
+            document.getElementById('previewCost').textContent = `DKK ${totalCost.toFixed(2)}`;
+            document.getElementById('previewPrice').textContent = `DKK ${sellingPrice.toFixed(2)}`;
+            document.getElementById('previewMargin').textContent = `${margin.toFixed(1)}%`;
+        }
+    }
+    
+    /**
+     * Toggle between builder mode and preview mode
+     */
+    function togglePreview() {
+        isPreviewMode = !isPreviewMode;
+        const builderMode = document.getElementById('builderMode');
+        const previewMode = document.getElementById('previewMode');
+        
+        if (isPreviewMode) {
+            // Update preview content with current data
+            const recipeName = document.getElementById('recipeName').value;
+            const menuItemId = document.getElementById('menuItemId').value;
+            const instructions = document.getElementById('instructions').value;
+            const totalCost = ingredients.reduce((sum, ing) => sum + ing.totalCost, 0);
+            const sellingPrice = parseFloat(document.getElementById('sellingPrice').value);
+            const profit = sellingPrice - totalCost;
+            const margin = sellingPrice > 0 ? (profit / sellingPrice) * 100 : 0;
+            
+            document.getElementById('previewName').textContent = recipeName;
+            document.getElementById('previewMenuItemId').textContent = menuItemId || 'Not linked';
+            document.getElementById('previewInstructions').textContent = instructions || 'No instructions provided.';
+            document.getElementById('previewCost').textContent = `DKK ${totalCost.toFixed(2)}`;
+            document.getElementById('previewPrice').textContent = sellingPrice ? `DKK ${sellingPrice.toFixed(2)}` : 'Not set';
+            document.getElementById('previewMargin').textContent = sellingPrice ? `${margin.toFixed(1)}%` : '--%';
+            
+            const previewList = document.getElementById('previewIngredientsList');
+            if (ingredients.length) {
+                previewList.innerHTML = ingredients.map(ing => 
+                    `<li>${ing.quantity} ${ing.unit} of ${ing.name}</li>`
+                ).join('');
+            } else {
+                previewList.innerHTML = '<li>No ingredients added</li>';
+            }
+            
+            builderMode.style.display = 'none';
+            previewMode.style.display = 'block';
+        } else {
+            builderMode.style.display = 'block';
+            previewMode.style.display = 'none';
+        }
+    }
+    
+    /**
+     * Print the current recipe preview
+     * Opens a new window with formatted recipe for printing
+     */
+    function printRecipe() {
+        const printContent = document.getElementById('previewMode').innerHTML;
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>Print Recipe - JIBS</title>
+                <style>
+                    body { font-family: 'Inter', sans-serif; padding: 40px; max-width: 600px; margin: 0 auto; }
+                    .recipe-card { border: 1px solid #ddd; padding: 20px; border-radius: 20px; }
+                    h1 { color: #22c55e; }
+                    ul { list-style: none; padding: 0; }
+                    li { padding: 5px 0; }
+                </style>
+            </head>
+            <body>
+                <div class="recipe-card">
+                    ${printContent}
+                </div>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+    }
+    
+    /**
+     * Open recipe builder for creating a new recipe
+     * Resets all form fields and clears ingredients
+     */
+    function openRecipeBuilder() {
+        currentRecipeId = null;
+        ingredients = [];
+        document.getElementById('builderTitle').textContent = 'Create New Recipe';
+        document.getElementById('recipeName').value = 'New Recipe';
+        document.getElementById('menuItemId').value = '';
+        document.getElementById('instructions').value = '';
+        document.getElementById('sellingPrice').value = '';
+        renderIngredientsList();
+        calculateTotalCost();
+        
+        if (isPreviewMode) {
+            togglePreview();
+        }
+    }
+    
+    /**
+     * Select and load an existing recipe for editing
+     * @param {number} recipeId - ID of recipe to edit
+     */
+    function selectRecipe(recipeId) {
+        currentRecipeId = recipeId;
+        document.getElementById('builderTitle').textContent = `Edit Recipe #${recipeId}`;
+        fetch(`/recipe/get/${recipeId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data) {
+                    document.getElementById('recipeName').value = data.name || `Recipe #${recipeId}`;
+                    document.getElementById('menuItemId').value = data.menuItemId || '';
+                    ingredients = data.ingredients || [];
+                    renderIngredientsList();
+                    calculateTotalCost();
+                    document.getElementById('instructions').value = data.instructions || '';
+                    document.getElementById('sellingPrice').value = data.sellingPrice || '';
+                    calculateProfit();
+                }
+            });
+    }
+    
+    /**
+     * Save the current recipe to the backend
+     * POSTs recipe data to /recipe/save endpoint
+     */
+    function saveRecipe() {
+        const recipeData = {
+            recipeId: currentRecipeId,
+            name: document.getElementById('recipeName').value,
+            menuItemId: document.getElementById('menuItemId').value,
+            ingredients: ingredients,
+            instructions: document.getElementById('instructions').value,
+            sellingPrice: parseFloat(document.getElementById('sellingPrice').value)
+        };
+        
+        fetch('/recipe/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(recipeData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Recipe saved successfully!');
+                location.reload();
+            } else {
+                alert('Error saving recipe: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            alert('Error saving recipe: ' + error);
+        });
+    }
+    
+    /**
+     * Filter recipes based on search input
+     * Shows/hides recipe items in the sidebar
+     */
+    function filterRecipes() {
+        const searchTerm = document.getElementById('recipeSearch').value.toLowerCase();
+        const items = document.querySelectorAll('.recipe-item');
+        
+        items.forEach(item => {
+            const name = item.dataset.name.toLowerCase();
+            if (name.includes(searchTerm)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+    
+    /**
+     * Initialize floating labels on page load
+     */
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.floating-group input').forEach(input => {
+            if (input.value) {
+                input.setAttribute('placeholder', ' ');
+            }
+            input.addEventListener('focus', () => {
+                input.setAttribute('placeholder', ' ');
+            });
+            input.addEventListener('blur', () => {
+                if (!input.value) {
+                    input.removeAttribute('placeholder');
+                }
+            });
+        });
+    });
+</script>
+
+{# End content block #}
+{% endblock %}

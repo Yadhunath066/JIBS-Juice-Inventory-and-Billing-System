@@ -1,0 +1,331 @@
+{# ========================================
+   stock_edit.html
+   Edit Ingredient Page - JIBS Inventory System
+   Form for editing existing ingredients with pre-populated values
+   Features: Floating labels, category field, client-side validation
+   ======================================== #}
+
+{# Extend the base layout template #}
+{% extends "layout.html" %}
+
+{# Begin content block that will be inserted into layout #}
+{% block content %}
+
+{# Main container for edit ingredient page #}
+<div class="stock-edit-container">
+    
+    {# ========================================
+       Page Header Section
+       ======================================== #}
+    <div class="page-header">
+        <h1>Edit Ingredient</h1>
+    </div>
+    
+    {# ========================================
+       Form Card Container
+       ======================================== #}
+    <div class="form-card">
+        
+        {# Display error message if validation fails on server side #}
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+        
+        {# ========================================
+           Edit Ingredient Form - POSTs to /stock/edit/[id]
+           Form fields pre-populated with current ingredient data
+           ======================================== #}
+        <form method="POST" action="/stock/edit/{{ stock.StockID }}">
+            
+            {# Ingredient Name Field - Pre-populated with existing value #}
+            <div class="form-group floating-group">
+                <input type="text" id="ingredientName" name="name" value="{{ stock.IngredientName }}" required placeholder=" ">
+                <label for="ingredientName">Ingredient Name</label>
+            </div>
+            
+            {# Quantity Field - Current stock amount, editable #}
+            <div class="form-group floating-group">
+                <input type="number" id="quantity" name="quantity" value="{{ stock.QuantityInStock }}" required placeholder=" " step="0.1">
+                <label for="quantity">Quantity In Stock</label>
+            </div>
+            
+            {# Minimum Stock Level Field - Alert threshold, editable #}
+            <div class="form-group floating-group">
+                <input type="number" id="minLevel" name="min_level" value="{{ stock.MinStockLevel }}" required placeholder=" ">
+                <label for="minLevel">Minimum Stock Level (Alert Threshold)</label>
+            </div>
+            
+            {# Unit Type Field - Measurement unit (kg, L, pcs, etc.) #}
+            <div class="form-group floating-group">
+                <input type="text" id="unit" name="unit" value="{{ stock.UnitType }}" required placeholder=" ">
+                <label for="unit">Unit Type (kg, L, pcs, etc.)</label>
+            </div>
+            
+            {# Category Field - Fruits, Vegetables, Dairy, Syrups, Other #}
+            <div class="form-group floating-group">
+                <input type="text" id="category" name="category" value="{{ stock.Category|default('Other') }}" placeholder=" ">
+                <label for="category">Category (Fruits, Vegetables, Dairy, Syrups, Other)</label>
+            </div>
+            
+            {# Perishable Checkbox - Checked if ingredient expires #}
+            <div class="form-group checkbox-group">
+                <input type="checkbox" name="perishable" value="1" id="perishable" {% if stock.IsPerishable %}checked{% endif %}>
+                <label for="perishable">Perishable?</label>
+            </div>
+            
+            {# ========================================
+               Form Action Buttons
+               ======================================== #}
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+                <a href="/stock" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# ========================================
+   Custom CSS Styles for Edit Ingredient Page
+   ======================================== #}
+<style>
+    /* Main container animation - fade in from bottom */
+    .stock-edit-container {
+        animation: fadeInUp 0.4s ease;
+    }
+    
+    /* Page header title - green left border for visual identity */
+    .page-header h1 {
+        font-size: 28px;
+        color: #f8fafc;
+        border-left: 5px solid #22c55e;
+        padding-left: 15px;
+        margin-bottom: 25px;
+    }
+    
+    /* Form card - glass morphism effect with frosted background */
+    .form-card {
+        background: rgba(15, 26, 22, 0.6);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 30px;
+        max-width: 550px;
+        transition: all 0.3s ease;
+    }
+    
+    /* Hover effect - green glow on card border */
+    .form-card:hover {
+        border-color: rgba(34, 197, 94, 0.3);
+        box-shadow: 0 0 20px rgba(34, 197, 94, 0.1);
+    }
+    
+    /* Spacing between form fields */
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    /* ========================================
+       Floating Label Styles
+       Label moves up when input has content or is focused
+       ======================================== */
+    .floating-group {
+        position: relative;
+    }
+    
+    /* Input field base styling with extra top padding for floating label */
+    .floating-group input {
+        width: 100%;
+        padding: 16px 12px 8px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        font-size: 15px;
+        color: #f8fafc;
+        transition: all 0.2s ease;
+        outline: none;
+    }
+    
+    /* Focus state - green border with subtle glow */
+    .floating-group input:focus {
+        border-color: #22c55e;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+    }
+    
+    /* Floating label - positioned inside input */
+    .floating-group label {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 14px;
+        color: #94a3b8;
+        transition: all 0.2s ease;
+        pointer-events: none;
+    }
+    
+    /* Label moves up when input has content or is focused */
+    .floating-group input:focus + label,
+    .floating-group input:not(:placeholder-shown) + label {
+        top: 8px;
+        transform: translateY(0);
+        font-size: 10px;
+        color: #22c55e;
+    }
+    
+    /* ========================================
+       Checkbox Group Styles
+       ======================================== */
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    /* Checkbox - auto width */
+    .checkbox-group input {
+        width: auto;
+    }
+    
+    /* Checkbox label - no floating behavior */
+    .checkbox-group label {
+        margin-bottom: 0;
+        cursor: pointer;
+        position: static;
+        transform: none;
+        font-size: 14px;
+        color: #f8fafc;
+    }
+    
+    /* ========================================
+       Error Message Styling
+       ======================================== */
+    .error {
+        background: rgba(231, 76, 60, 0.1);
+        border-left: 3px solid #e74c3c;
+        color: #e74c3c;
+        padding: 12px 16px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        white-space: pre-line;
+    }
+    
+    /* ========================================
+       Button Group Styles
+       ======================================== */
+    .button-group {
+        display: flex;
+        gap: 15px;
+        margin-top: 10px;
+    }
+    
+    /* ========================================
+       Button Styles
+       ======================================== */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        border: none;
+        font-size: 14px;
+    }
+    
+    /* Primary button - solid green background */
+    .btn-primary {
+        background: #22c55e;
+        color: white;
+    }
+    
+    /* Primary button hover - darker green with lift effect */
+    .btn-primary:hover {
+        background: #16a34a;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);
+    }
+    
+    /* Secondary button - transparent with border */
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #f8fafc;
+    }
+    
+    /* Secondary button hover - more visible with green border */
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: #22c55e;
+        transform: translateY(-2px);
+    }
+    
+    /* Initial placeholder setup for floating labels */
+    input:not(:placeholder-shown) {
+        padding-top: 16px;
+        padding-bottom: 8px;
+    }
+    
+    /* ========================================
+       Responsive Design for Mobile Devices
+       ======================================== */
+    @media (max-width: 768px) {
+        /* Full width form card on mobile */
+        .form-card {
+            width: 100%;
+            margin: 0;
+        }
+        
+        /* Stack buttons vertically on mobile */
+        .button-group {
+            flex-direction: column;
+        }
+        
+        /* Center button text on mobile */
+        .btn {
+            justify-content: center;
+        }
+    }
+</style>
+
+{# ========================================
+   JavaScript for Floating Labels Initialization
+   ======================================== #}
+<script>
+    /**
+     * Initialize floating labels on page load
+     * Sets placeholder attribute for fields that already have values
+     * Handles focus and blur events for floating label behavior
+     */
+    document.addEventListener('DOMContentLoaded', function() {
+        // For all input fields, check if they have value
+        document.querySelectorAll('.floating-group input').forEach(input => {
+            if (input.value) {
+                input.setAttribute('placeholder', ' ');
+            }
+        });
+        
+        // Add placeholder on focus, remove on blur if empty
+        document.querySelectorAll('.floating-group input').forEach(input => {
+            // On focus - always show placeholder to trigger floating label
+            input.addEventListener('focus', () => {
+                input.setAttribute('placeholder', ' ');
+            });
+            
+            // On blur - remove placeholder if empty, keep if has value
+            input.addEventListener('blur', () => {
+                if (!input.value) {
+                    input.removeAttribute('placeholder');
+                } else {
+                    input.setAttribute('placeholder', ' ');
+                }
+            });
+        });
+    });
+</script>
+
+{# End content block #}
+{% endblock %}

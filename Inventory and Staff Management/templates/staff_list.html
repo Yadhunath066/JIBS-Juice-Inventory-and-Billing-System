@@ -1,0 +1,977 @@
+{# ========================================
+   staff_list.html
+   Staff Management Page - JIBS Inventory System
+   Displays all staff members with search, filter, add, edit, and GDPR-compliant delete
+   ======================================== #}
+
+{# Extend the base layout template #}
+{% extends "layout.html" %}
+
+{# Begin content block that will be inserted into layout #}
+{% block content %}
+
+{# Main container for staff management page #}
+<div class="staff-container">
+    
+    <!-- ========================================
+         HEADER SECTION
+         Page title and add staff button
+         ======================================== -->
+    <div class="staff-header">
+        <div class="header-title">
+            <h1>👥 Staff Management</h1>
+            <p>Manage your team members and their roles</p>
+        </div>
+        <button class="btn btn-primary" onclick="openAddDrawer()">
+            <i class="fas fa-plus"></i> Add New Staff
+        </button>
+    </div>
+
+    <!-- ========================================
+         SEARCH AND FILTER BAR
+         Search by name, filter by role and status
+         ======================================== -->
+    <div class="search-filters glass-card">
+        
+        <!-- Search input for staff names -->
+        <div class="search-bar">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search by name..." onkeyup="filterStaff()">
+        </div>
+        
+        <!-- Filter dropdowns -->
+        <div class="filter-group">
+            <!-- Role filter - Admin or Cashier -->
+            <select id="roleFilter" class="filter-select" onchange="filterStaff()">
+                <option value="all">All Roles</option>
+                <option value="Admin">👑 Admin</option>
+                <option value="Cashier">💰 Cashier</option>
+            </select>
+            
+            <!-- Status filter - Active or Inactive -->
+            <select id="statusFilter" class="filter-select" onchange="filterStaff()">
+                <option value="all">All Status</option>
+                <option value="active">🟢 Active</option>
+                <option value="inactive">⚫ Inactive</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- ========================================
+         STAFF GRID
+         Displays all staff members in card format
+         ======================================== -->
+    <div class="staff-grid" id="staffGrid">
+        
+        {# Loop through all staff members from backend #}
+        {% for staff_member in staff_list %}
+        <div class="staff-card glass-card" 
+             data-id="{{ staff_member.StaffID }}" 
+             data-name="{{ staff_member.FullName }}" 
+             data-role="{{ staff_member.Role }}" 
+             data-status="{{ staff_member.IsActive }}" 
+             data-username="{{ staff_member.Username }}" 
+             data-date="{{ staff_member.DateHired }}">
+            
+            <!-- Card Avatar - Shows initials and status dot -->
+            <div class="card-avatar">
+                <div class="avatar-initials">{{ staff_member.FullName[:2]|upper }}</div>
+                <div class="status-dot {% if staff_member.IsActive == 1 %}active{% else %}inactive{% endif %}"></div>
+            </div>
+            
+            <!-- Card Info - Staff details -->
+            <div class="card-info">
+                <h3 class="staff-name">{{ staff_member.FullName }}</h3>
+                <p class="staff-role">{{ staff_member.Role }}</p>
+                <!-- FIXED: Changed [:10] to strftime('%Y-%m-%d') -->
+                <p class="staff-date">Joined: {{ staff_member.DateHired.strftime('%Y-%m-%d') if staff_member.DateHired else 'N/A' }}</p>
+            </div>
+            
+            <!-- Card Badge - Active/Inactive status pill -->
+            <div class="card-badge">
+                {% if staff_member.IsActive == 1 %}
+                    <span class="status-badge active">🟢 Active</span>
+                {% else %}
+                    <span class="status-badge inactive">⚫ Inactive</span>
+                {% endif %}
+            </div>
+            
+            <!-- Card Actions - Edit and Delete buttons -->
+            <div class="card-actions">
+                <button class="action-icon edit" onclick="openEditDrawer({{ staff_member.StaffID }})" title="Edit">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <!-- Delete button only shows for active staff (GDPR compliance) -->
+                {% if staff_member.IsActive == 1 %}
+                <button class="action-icon delete" onclick="openDeleteModal({{ staff_member.StaffID }}, '{{ staff_member.FullName }}')" title="GDPR Permanent Deletion">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+        
+    </div>
+</div>
+
+<!-- ========================================
+     SIDE DRAWER (Add/Edit Form)
+     Slides in from right side for adding/editing staff
+     ======================================== -->
+<div id="sideDrawer" class="side-drawer">
+    
+    <!-- Overlay to close drawer when clicking outside -->
+    <div class="drawer-overlay" onclick="closeDrawer()"></div>
+    
+    <!-- Drawer content container -->
+    <div class="drawer-content glass-card">
+        <div class="drawer-header">
+            <h2 id="drawerTitle">Add New Staff Member</h2>
+            <button class="drawer-close" onclick="closeDrawer()">&times;</button>
+        </div>
+        
+        <!-- Staff Form - Dynamic action based on add/edit mode -->
+        <form id="staffForm" method="POST">
+            <input type="hidden" id="staffId" name="staff_id">
+            
+            <!-- Full Name Field -->
+            <div class="form-group floating-group">
+                <input type="text" id="fullName" name="full_name" required placeholder=" ">
+                <label>Full Name</label>
+            </div>
+            
+            <!-- Username Field -->
+            <div class="form-group floating-group">
+                <input type="text" id="username" name="username" required placeholder=" ">
+                <label>Username</label>
+            </div>
+            
+            <!-- Password Field - Required for add, optional for edit -->
+            <div class="form-group floating-group" id="passwordGroup">
+                <input type="password" id="password" name="password" placeholder=" ">
+                <label id="passwordLabel">Password</label>
+            </div>
+            
+            <!-- Role Dropdown -->
+            <div class="form-group floating-group">
+                <select id="role" name="role" required>
+                    <option value="">Select Role</option>
+                    <option value="Cashier">💰 Cashier</option>
+                    <option value="Admin">👑 Admin</option>
+                </select>
+                <label>Role</label>
+            </div>
+            
+            <!-- Active Status Checkbox - Only shown in edit mode -->
+            <div class="form-group checkbox-group" id="activeGroup" style="display: none;">
+                <input type="checkbox" id="isActive" name="is_active" value="1">
+                <label>Active (staff can login)</label>
+            </div>
+            
+            <!-- Form Action Buttons -->
+            <div class="drawer-buttons">
+                <button type="submit" class="btn btn-primary">💾 Save Staff</button>
+                <button type="button" class="btn btn-secondary" onclick="closeDrawer()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ========================================
+     GDPR DELETION MODAL
+     Requires confirmation by typing "DELETE" for irreversible action
+     ======================================== -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content glass-card">
+        <div class="modal-header">
+            <h2>⚠️ GDPR Permanent Deletion</h2>
+            <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>You are about to permanently <strong>anonymize and delete</strong> the staff record for:</p>
+            <p class="delete-staff-name" id="deleteStaffName"></p>
+            <p class="warning-text">This action is <strong>IRREVERSIBLE</strong> and GDPR compliant.</p>
+            <p>Type <strong class="delete-confirm-word">DELETE</strong> below to confirm:</p>
+            <input type="text" id="confirmDeleteInput" class="confirm-input" placeholder="Type DELETE here" onkeyup="checkDeleteConfirm()">
+        </div>
+        <div class="modal-buttons">
+            <button id="confirmDeleteBtn" class="btn btn-danger" disabled onclick="confirmDelete()">Permanently Delete</button>
+            <button class="btn btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+        </div>
+    </div>
+</div>
+
+{# ========================================
+   Custom CSS Styles for Staff Management Page
+   ======================================== #}
+<style>
+    /* Main container animation and layout */
+    .staff-container {
+        animation: fadeInUp 0.4s ease;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    /* ========================================
+       Header Section Styles
+       ======================================== */
+    .staff-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .header-title h1 {
+        font-size: 28px;
+        color: #f8fafc;
+        border-left: 5px solid #22c55e;
+        padding-left: 15px;
+        margin-bottom: 8px;
+    }
+
+    .header-title p {
+        color: #94a3b8;
+        margin-left: 20px;
+        font-size: 14px;
+    }
+
+    /* ========================================
+       Search and Filter Bar Styles
+       ======================================== */
+    .search-filters {
+        padding: 20px 24px;
+        border-radius: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .search-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 40px;
+        padding: 8px 20px;
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .search-bar i {
+        color: #94a3b8;
+    }
+
+    .search-bar input {
+        background: transparent;
+        border: none;
+        color: #f8fafc;
+        width: 100%;
+        outline: none;
+    }
+
+    .search-bar input::placeholder {
+        color: #94a3b8;
+    }
+
+    .filter-group {
+        display: flex;
+        gap: 12px;
+    }
+
+    .filter-select {
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 40px;
+        padding: 8px 16px;
+        color: #f8fafc;
+        cursor: pointer;
+        outline: none;
+    }
+
+    /* ========================================
+       Staff Grid - Card Layout
+       ======================================== */
+    .staff-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 24px;
+    }
+
+    /* Individual staff card */
+    .staff-card {
+        padding: 20px;
+        border-radius: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Card hover effect - lift and green glow */
+    .staff-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(34, 197, 94, 0.3);
+        box-shadow: 0 8px 32px rgba(34, 197, 94, 0.1);
+    }
+
+    /* Delete animation - card shrink */
+    .staff-card.removing {
+        animation: cardShrink 0.3s ease forwards;
+    }
+
+    @keyframes cardShrink {
+        0% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        100% {
+            opacity: 0;
+            transform: scale(0.8);
+            display: none;
+        }
+    }
+
+    /* Card avatar - circular with initials */
+    .card-avatar {
+        position: relative;
+        display: flex;
+        justify-content: center;
+    }
+
+    .avatar-initials {
+        width: 70px;
+        height: 70px;
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: bold;
+        color: white;
+    }
+
+    /* Status dot indicator on avatar */
+    .status-dot {
+        position: absolute;
+        bottom: 2px;
+        right: 35%;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 2px solid rgba(15, 26, 22, 0.6);
+    }
+
+    .status-dot.active {
+        background: #22c55e;
+        box-shadow: 0 0 8px #22c55e;
+        animation: pulse 2s infinite;
+    }
+
+    .status-dot.inactive {
+        background: #e74c3c;
+    }
+
+    /* Pulse animation for active status */
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    /* Card info section */
+    .card-info {
+        text-align: center;
+    }
+
+    .staff-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: #f8fafc;
+        margin-bottom: 5px;
+    }
+
+    .staff-role {
+        font-size: 13px;
+        color: #22c55e;
+        margin-bottom: 5px;
+    }
+
+    .staff-date {
+        font-size: 11px;
+        color: #94a3b8;
+    }
+
+    /* Status badge pill */
+    .card-badge {
+        text-align: center;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    .status-badge.active {
+        background: rgba(34, 197, 94, 0.15);
+        color: #22c55e;
+        border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+
+    .status-badge.inactive {
+        background: rgba(231, 76, 60, 0.15);
+        color: #e74c3c;
+        border: 1px solid rgba(231, 76, 60, 0.3);
+    }
+
+    /* Action buttons */
+    .card-actions {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    .action-icon {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 10px;
+        transition: all 0.2s;
+        font-size: 16px;
+    }
+
+    .action-icon.edit {
+        color: #3498db;
+    }
+
+    .action-icon.edit:hover {
+        background: rgba(52, 152, 219, 0.2);
+    }
+
+    .action-icon.delete {
+        color: #e74c3c;
+    }
+
+    .action-icon.delete:hover {
+        background: rgba(231, 76, 60, 0.2);
+    }
+
+    /* ========================================
+       Side Drawer Styles
+       ======================================== */
+    .side-drawer {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1000;
+        display: none;
+        justify-content: flex-end;
+    }
+
+    .side-drawer.show {
+        display: flex;
+    }
+
+    .drawer-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+    }
+
+    .drawer-content {
+        position: relative;
+        width: 450px;
+        max-width: 90%;
+        height: 100%;
+        padding: 30px;
+        border-radius: 0;
+        overflow-y: auto;
+        animation: slideIn 0.3s ease;
+    }
+
+    /* Slide in animation for drawer */
+    @keyframes slideIn {
+        from {
+            transform: translateX(100%);
+        }
+        to {
+            transform: translateX(0);
+        }
+    }
+
+    .drawer-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .drawer-header h2 {
+        font-size: 22px;
+        color: #f8fafc;
+    }
+
+    .drawer-close {
+        background: transparent;
+        border: none;
+        font-size: 28px;
+        color: #94a3b8;
+        cursor: pointer;
+    }
+
+    .drawer-close:hover {
+        color: #e74c3c;
+    }
+
+    .drawer-buttons {
+        display: flex;
+        gap: 15px;
+        margin-top: 30px;
+    }
+
+    /* ========================================
+       Form Styles
+       ======================================== */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .floating-group {
+        position: relative;
+    }
+
+    .floating-group input, .floating-group select {
+        width: 100%;
+        padding: 16px 12px 8px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        font-size: 15px;
+        color: #f8fafc;
+        outline: none;
+    }
+
+    .floating-group select {
+        padding: 14px 12px;
+        cursor: pointer;
+    }
+
+    /* Focus state for form inputs */
+    .floating-group input:focus, .floating-group select:focus {
+        border-color: #22c55e;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+    }
+
+    /* Floating label - moves up when input has value or is focused */
+    .floating-group label {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 14px;
+        color: #94a3b8;
+        transition: all 0.2s ease;
+        pointer-events: none;
+    }
+
+    .floating-group input:focus + label,
+    .floating-group input:not(:placeholder-shown) + label,
+    .floating-group select:focus + label,
+    .floating-group select:not([value=""]) + label {
+        top: 8px;
+        transform: translateY(0);
+        font-size: 10px;
+        color: #22c55e;
+    }
+
+    /* Checkbox group styling */
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .checkbox-group input {
+        width: auto;
+    }
+
+    .checkbox-group label {
+        margin-bottom: 0;
+        cursor: pointer;
+    }
+
+    /* ========================================
+       GDPR Modal Styles
+       ======================================== */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(8px);
+        z-index: 1001;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal.show {
+        display: flex;
+    }
+
+    .modal-content {
+        width: 90%;
+        max-width: 450px;
+        padding: 30px;
+        border-radius: 24px;
+        animation: modalDrop 0.3s ease;
+    }
+
+    @keyframes modalDrop {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .modal-header h2 {
+        color: #e74c3c;
+        font-size: 22px;
+    }
+
+    .modal-close {
+        background: transparent;
+        border: none;
+        font-size: 28px;
+        color: #94a3b8;
+        cursor: pointer;
+    }
+
+    .modal-body {
+        margin-bottom: 25px;
+    }
+
+    .modal-body p {
+        color: #94a3b8;
+        margin-bottom: 10px;
+    }
+
+    .delete-staff-name {
+        font-weight: bold;
+        color: #f8fafc;
+        font-size: 18px;
+        text-align: center;
+        padding: 10px;
+        background: rgba(231, 76, 60, 0.1);
+        border-radius: 12px;
+        margin: 15px 0;
+    }
+
+    .warning-text {
+        color: #e74c3c !important;
+        font-weight: bold;
+    }
+
+    .delete-confirm-word {
+        color: #22c55e;
+        font-family: monospace;
+        font-size: 16px;
+    }
+
+    .confirm-input {
+        width: 100%;
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        color: #f8fafc;
+        margin-top: 10px;
+        text-align: center;
+        font-family: monospace;
+        letter-spacing: 2px;
+    }
+
+    /* ========================================
+       Button Styles
+       ======================================== */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        border: none;
+        font-size: 14px;
+    }
+
+    .btn-primary {
+        background: #22c55e;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #16a34a;
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #f8fafc;
+    }
+
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-danger {
+        background: #e74c3c;
+        color: white;
+    }
+
+    .btn-danger:hover:not(:disabled) {
+        background: #c0392b;
+    }
+
+    .btn-danger:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* ========================================
+       Responsive Design Breakpoints
+       ======================================== */
+    @media (max-width: 768px) {
+        .search-filters {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        
+        .filter-group {
+            flex-direction: column;
+        }
+        
+        .staff-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .drawer-content {
+            width: 100%;
+        }
+    }
+</style>
+
+{# ========================================
+   JavaScript for Staff Management
+   ======================================== #}
+<script>
+    // Global variable to store ID of staff member being deleted
+    let deleteStaffId = null;
+
+    /**
+     * Filter staff cards based on search term, role, and status
+     * Shows/hides cards that match all filter criteria
+     */
+    function filterStaff() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const roleFilter = document.getElementById('roleFilter').value;
+        const statusFilter = document.getElementById('statusFilter').value;
+        const cards = document.querySelectorAll('.staff-card');
+        
+        cards.forEach(card => {
+            const name = card.dataset.name.toLowerCase();
+            const role = card.dataset.role;
+            const status = card.dataset.status;
+            
+            // Check all filter conditions
+            const matchesSearch = name.includes(searchTerm);
+            const matchesRole = roleFilter === 'all' || role === roleFilter;
+            const matchesStatus = statusFilter === 'all' || 
+                                 (statusFilter === 'active' && status == 1) || 
+                                 (statusFilter === 'inactive' && status == 0);
+            
+            if (matchesSearch && matchesRole && matchesStatus) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    /**
+     * Open side drawer for adding new staff member
+     * Resets form and sets action to /staff/add
+     */
+    function openAddDrawer() {
+        document.getElementById('drawerTitle').textContent = 'Add New Staff Member';
+        document.getElementById('staffForm').reset();
+        document.getElementById('staffId').value = '';
+        document.getElementById('staffForm').action = '/staff/add';
+        document.getElementById('passwordGroup').style.display = 'block';
+        document.getElementById('passwordLabel').textContent = 'Password';
+        document.getElementById('password').required = true;
+        document.getElementById('activeGroup').style.display = 'none';
+        document.getElementById('sideDrawer').classList.add('show');
+    }
+    
+    /**
+     * Open side drawer for editing existing staff member
+     * Fetches staff data and populates form
+     * @param {number} staffId - ID of staff member to edit
+     */
+    function openEditDrawer(staffId) {
+        fetch(`/staff/get/${staffId}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('drawerTitle').textContent = 'Edit Staff Member';
+                document.getElementById('staffId').value = data.StaffID;
+                document.getElementById('fullName').value = data.FullName;
+                document.getElementById('username').value = data.Username;
+                document.getElementById('role').value = data.Role;
+                document.getElementById('password').value = '';
+                document.getElementById('password').required = false;
+                document.getElementById('passwordLabel').textContent = 'New Password (leave blank to keep current)';
+                document.getElementById('passwordGroup').style.display = 'block';
+                document.getElementById('isActive').checked = data.IsActive === 1;
+                document.getElementById('activeGroup').style.display = 'block';
+                document.getElementById('staffForm').action = `/staff/edit/${staffId}`;
+                document.getElementById('sideDrawer').classList.add('show');
+            });
+    }
+    
+    /**
+     * Close the side drawer
+     */
+    function closeDrawer() {
+        document.getElementById('sideDrawer').classList.remove('show');
+    }
+    
+    /**
+     * Open GDPR deletion modal
+     * Requires confirmation by typing "DELETE"
+     * @param {number} staffId - ID of staff to delete
+     * @param {string} staffName - Name of staff for confirmation display
+     */
+    function openDeleteModal(staffId, staffName) {
+        deleteStaffId = staffId;
+        document.getElementById('deleteStaffName').textContent = staffName;
+        document.getElementById('confirmDeleteInput').value = '';
+        document.getElementById('confirmDeleteBtn').disabled = true;
+        document.getElementById('deleteModal').classList.add('show');
+    }
+    
+    /**
+     * Close the deletion modal
+     */
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('show');
+        deleteStaffId = null;
+    }
+    
+    /**
+     * Check if confirmation input matches "DELETE"
+     * Enables delete button only when exact match
+     */
+    function checkDeleteConfirm() {
+        const input = document.getElementById('confirmDeleteInput').value;
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        if (input === 'DELETE') {
+            confirmBtn.disabled = false;
+        } else {
+            confirmBtn.disabled = true;
+        }
+    }
+    
+    /**
+     * Confirm and execute deletion
+     * Animates card removal then redirects to delete endpoint
+     */
+    function confirmDelete() {
+        if (deleteStaffId) {
+            const card = document.querySelector(`.staff-card[data-id="${deleteStaffId}"]`);
+            if (card) {
+                card.classList.add('removing');
+                setTimeout(() => {
+                    window.location.href = `/staff/delete/${deleteStaffId}`;
+                }, 300);
+            } else {
+                window.location.href = `/staff/delete/${deleteStaffId}`;
+            }
+        }
+    }
+    
+    /**
+     * Initialize floating labels and card animations on page load
+     */
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize floating labels - set placeholder for inputs with values
+        document.querySelectorAll('.floating-group input, .floating-group select').forEach(input => {
+            if (input.value) {
+                input.setAttribute('placeholder', ' ');
+            }
+            input.addEventListener('focus', () => {
+                input.setAttribute('placeholder', ' ');
+            });
+            input.addEventListener('blur', () => {
+                if (!input.value) {
+                    input.removeAttribute('placeholder');
+                }
+            });
+        });
+        
+        // Animate cards on load with staggered delay
+        document.querySelectorAll('.staff-card').forEach((card, index) => {
+            card.style.animation = `fadeInUp 0.3s ease ${index * 0.05}s backwards`;
+        });
+    });
+    
+    // Close drawer/modal on Escape key press
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeDrawer();
+            closeDeleteModal();
+        }
+    });
+    
+    // Click outside drawer to close
+    document.querySelector('.drawer-overlay')?.addEventListener('click', closeDrawer);
+</script>
+
+{# End content block #}
+{% endblock %}

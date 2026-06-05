@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<!-- ========================================
+     logout.html
+     Logout Page - JIBS Inventory System
+     Shown after user successfully logs out
+     ======================================== -->
+<html>
+<head>
+    <title>Logout - JIBS</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* ========================================
+           Global Reset
+           ======================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* Body styling - full viewport with dark background */
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: #060d0a;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* ========================================
+           Video Background Section
+           ======================================== */
+        /* Video container - full screen background video */
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+        }
+        
+        /* Video element - covers entire screen */
+        .video-background video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: cover;
+        }
+        
+        /* Dark overlay on top of video for better text readability */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: -1;
+        }
+        
+        /* ========================================
+           Glassmorphism Logout Card
+           ======================================== */
+        .logout-card {
+            background: rgba(15, 26, 22, 0.6);
+            backdrop-filter: blur(12px);          /* Frosted glass effect */
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 40px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            transition: all 0.3s ease;
+        }
+        
+        /* Hover effect - green glow on card border */
+        .logout-card:hover {
+            border-color: rgba(34, 197, 94, 0.3);
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.1);
+        }
+        
+        /* Large waving hand icon */
+        .logout-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        
+        /* Main heading */
+        h1 {
+            color: #f8fafc;
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        /* Shop/brand name */
+        .shop-name {
+            color: #22c55e;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        /* Confirmation message text */
+        p {
+            color: #94a3b8;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+        
+        /* ========================================
+           Button Styles
+           ======================================== */
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background: #22c55e;                 /* Green background */
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            margin: 5px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        /* Primary button hover effect */
+        .btn:hover {
+            background: #16a34a;                 /* Darker green on hover */
+            transform: translateY(-2px);          /* Slight lift effect */
+            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);
+        }
+        
+        /* Secondary button - transparent with border */
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        
+        /* Secondary button hover effect */
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: #22c55e;
+            transform: translateY(-2px);
+        }
+        
+        /* ========================================
+           Responsive Design
+           ======================================== */
+        @media (max-width: 480px) {
+            /* Reduce padding on mobile */
+            .logout-card {
+                padding: 30px 20px;
+            }
+            
+            /* Stack buttons vertically on mobile */
+            .btn {
+                display: block;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ========================================
+         Video Background Section
+         ======================================== -->
+    <div class="video-background">
+        <video autoplay muted loop playsinline>
+            {# Background video - loops continuously, no sound #}
+            <source src="{{ url_for('static', filename='videos/background.mp4') }}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+    <!-- Dark overlay for text contrast -->
+    <div class="overlay"></div>
+    
+    <!-- ========================================
+         Logout Card Container
+         ======================================== -->
+    <div class="logout-card">
+        <!-- Waving hand icon -->
+        <div class="logout-icon">👋</div>
+        
+        <!-- Confirmation Heading -->
+        <h1>Logged Out</h1>
+        
+        <!-- Brand name -->
+        <div class="shop-name">Sip & Go Junction</div>
+        
+        <!-- Success message -->
+        <p>You have been successfully logged out.</p>
+        
+        <!-- ========================================
+             Action Buttons
+             ======================================== -->
+        <!-- Button to return to main login page -->
+        <a href="/login" class="btn">Login Again</a>
+        
+        <!-- Button to go to cashier system (port 5000) -->
+        <a href="http://127.0.0.1:5000/login" class="btn btn-secondary">Go to Cashier System</a>
+    </div>
+</body>
+</html>

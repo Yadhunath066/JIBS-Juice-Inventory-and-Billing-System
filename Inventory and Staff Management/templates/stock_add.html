@@ -1,0 +1,330 @@
+{# ========================================
+   stock_add.html
+   Add New Ingredient Page - JIBS Inventory System
+   Form for adding new ingredients to stock with validation
+   ======================================== #}
+
+{# Extend the base layout template #}
+{% extends "layout.html" %}
+
+{# Begin content block that will be inserted into layout #}
+{% block content %}
+
+{# Main container for add ingredient page #}
+<div class="stock-add-container">
+    
+    {# ========================================
+       Page Header Section
+       ======================================== #}
+    <div class="page-header">
+        <h1>Add New Ingredient</h1>
+    </div>
+    
+    {# ========================================
+       Form Card Container
+       ======================================== #}
+    <div class="form-card">
+        
+        {# Display error message if validation fails on server side #}
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+        
+        {# ========================================
+           Add Ingredient Form - POSTs to /stock/add
+           Client-side validation before submission
+           ======================================== #}
+        <form method="POST" action="/stock/add" id="stockForm">
+            
+            {# Ingredient Name Field #}
+            <div class="form-group">
+                <label>Ingredient Name</label>
+                <input type="text" name="name" required id="name">
+            </div>
+            
+            {# Category Dropdown - Predefined categories #}
+            <div class="form-group">
+                <label>Category</label>
+                <select name="category" id="category" required style="width:100%; padding:12px 16px; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); border-radius:12px; font-size:14px; color:#f8fafc;">
+                    <option value="Fruits">Fruits</option>
+                    <option value="Vegetables">Vegetables</option>
+                    <option value="Dairy">Dairy</option>
+                    <option value="Syrups">Syrups</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            
+            {# Quantity Field - Current stock amount #}
+            <div class="form-group">
+                <label>Quantity In Stock</label>
+                <input type="number" name="quantity" value="0" required id="quantity">
+            </div>
+            
+            {# Minimum Stock Level Field - Alert threshold #}
+            <div class="form-group">
+                <label>Minimum Stock Level (Alert Threshold)</label>
+                <input type="number" name="min_level" value="5" required id="min_level">
+            </div>
+            
+            {# Unit Type Field - Measurement unit #}
+            <div class="form-group">
+                <label>Unit Type (kg, L, pcs, etc.)</label>
+                <input type="text" name="unit" required id="unit" placeholder="kg, g, l, ml, pcs, bottle, pack, box">
+            </div>
+            
+            {# Perishable Checkbox - Indicates if item expires #}
+            <div class="form-group checkbox-group">
+                <input type="checkbox" name="perishable" value="1" id="perishable">
+                <label for="perishable">Perishable?</label>
+            </div>
+            
+            {# ========================================
+               Form Action Buttons
+               ======================================== #}
+            <div class="button-group">
+                <button type="submit" class="btn btn-primary">➕ Add Ingredient</button>
+                <a href="/stock" class="btn btn-secondary">Cancel</a>
+            </div>
+            
+        </form>
+    </div>
+</div>
+
+{# ========================================
+   Custom CSS Styles for Add Ingredient Page
+   ======================================== #}
+<style>
+    /* Main container animation - fade in from bottom */
+    .stock-add-container {
+        animation: fadeInUp 0.4s ease;
+    }
+    
+    /* Page header title - green left border */
+    .page-header h1 {
+        font-size: 28px;
+        color: #f8fafc;
+        border-left: 5px solid #22c55e;
+        padding-left: 15px;
+        margin-bottom: 25px;
+    }
+    
+    /* Form card - glass morphism styling */
+    .form-card {
+        background: rgba(15, 26, 22, 0.6);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 20px;
+        padding: 30px;
+        max-width: 500px;
+        transition: all 0.3s ease;
+    }
+    
+    /* Hover effect - green glow on card */
+    .form-card:hover {
+        border-color: rgba(34, 197, 94, 0.3);
+        box-shadow: 0 0 20px rgba(34, 197, 94, 0.1);
+    }
+    
+    /* Form group spacing */
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    /* Label styling */
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #f8fafc;
+        font-size: 14px;
+    }
+    
+    /* Input and select field styling */
+    input, select {
+        width: 100%;
+        padding: 12px 16px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        font-size: 14px;
+        color: #f8fafc;
+        transition: all 0.2s ease;
+    }
+    
+    /* Focus state - green border with glow */
+    input:focus, select:focus {
+        outline: none;
+        border-color: #22c55e;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+    }
+    
+    /* Checkbox styling - auto width */
+    input[type="checkbox"] {
+        width: auto;
+        margin-right: 10px;
+    }
+    
+    /* Placeholder text color */
+    input::placeholder {
+        color: #94a3b8;
+    }
+    
+    /* Checkbox group - horizontal layout */
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+    }
+    
+    .checkbox-group label {
+        margin-bottom: 0;
+        cursor: pointer;
+    }
+    
+    /* Error message styling - red with left border */
+    .error {
+        background: rgba(231, 76, 60, 0.1);
+        border-left: 3px solid #e74c3c;
+        color: #e74c3c;
+        padding: 12px 16px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        white-space: pre-line;  /* Preserve line breaks in error messages */
+    }
+    
+    /* Button group - horizontal layout */
+    .button-group {
+        display: flex;
+        gap: 15px;
+        margin-top: 10px;
+    }
+    
+    /* ========================================
+       Button Styles
+       ======================================== */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        border: none;
+        font-size: 14px;
+    }
+    
+    /* Primary button - solid green */
+    .btn-primary {
+        background: #22c55e;
+        color: white;
+    }
+    
+    /* Primary button hover effect */
+    .btn-primary:hover {
+        background: #16a34a;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);
+    }
+    
+    /* Secondary button - transparent with border */
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #f8fafc;
+    }
+    
+    /* Secondary button hover effect */
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: #22c55e;
+        transform: translateY(-2px);
+    }
+    
+    /* ========================================
+       Responsive Design Breakpoints
+       ======================================== */
+    @media (max-width: 768px) {
+        /* Full width form card on mobile */
+        .form-card {
+            width: 100%;
+            margin: 0;
+        }
+        
+        /* Stack buttons vertically on mobile */
+        .button-group {
+            flex-direction: column;
+        }
+        
+        .btn {
+            justify-content: center;
+        }
+    }
+</style>
+
+{# ========================================
+   JavaScript for Client-side Validation
+   ======================================== #}
+<script>
+    /**
+     * Real-time validation for form submission
+     * Validates unit type, quantity, min level, and category before sending to server
+     * Prevents form submission if validation fails
+     */
+    document.getElementById('stockForm').addEventListener('submit', function(e) {
+        // Get form field values
+        const unit = document.getElementById('unit').value;
+        const quantity = document.getElementById('quantity').value;
+        const minLevel = document.getElementById('min_level').value;
+        const category = document.getElementById('category').value;
+        const perishable = document.getElementById('perishable').checked;
+        
+        let errors = [];
+        
+        // Validate unit type against allowed values
+        const validUnits = ['kg', 'g', 'l', 'ml', 'pcs', 'bottle', 'pack', 'box'];
+        if (!validUnits.includes(unit.toLowerCase())) {
+            errors.push("Oops! '" + unit + "' is not a valid unit. Please use: " + validUnits.join(', '));
+        }
+        
+        // Validate quantity is not negative
+        if (quantity < 0) {
+            errors.push("Oops! Quantity cannot be negative.");
+        }
+        
+        // Validate minimum level is not negative
+        if (minLevel < 0) {
+            errors.push("Oops! Minimum stock level cannot be negative.");
+        }
+        
+        // Validate category is from predefined list
+        const validCategories = ['Fruits', 'Vegetables', 'Dairy', 'Syrups', 'Other'];
+        if (!validCategories.includes(category)) {
+            errors.push("Oops! '" + category + "' is not a valid category. Please choose from: " + validCategories.join(', '));
+        }
+        
+        // If there are errors, prevent form submission and show alert
+        if (errors.length > 0) {
+            e.preventDefault();
+            alert(errors.join('\n'));
+        }
+    });
+    
+    /**
+     * Real-time validation for unit field on blur
+     * Checks if entered unit is valid, clears invalid entries
+     */
+    document.getElementById('unit').addEventListener('blur', function() {
+        const unit = this.value;
+        const validUnits = ['kg', 'g', 'l', 'ml', 'pcs', 'bottle', 'pack', 'box'];
+        if (unit && !validUnits.includes(unit.toLowerCase())) {
+            alert("Oops! '" + unit + "' is not a valid unit. Please use: " + validUnits.join(', '));
+            this.value = '';  // Clear invalid input
+        }
+    });
+</script>
+
+{# End content block #}
+{% endblock %}
